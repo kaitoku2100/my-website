@@ -2,435 +2,1339 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>リハビリテーション医学 完全版 自習ツール</title>
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国家試験 過去問演習ツール (アクセシブル版)</title>
+    <!-- Tailwind CSS (スタイリングに使用) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX compilation in browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-        .animate-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-        select { color: inherit !important; background: inherit !important; }
+        /* カスタムのCSS変数を用いたアクセシブルテーマ */
+        :root {
+            /* 標準テーマ: ソフトライト (オフホワイト) */
+            --bg-color: #fbfaf5;
+            --text-color: #2d2d2d;
+            --button-bg: #ece7df;
+            --button-text: #2d2d2d;
+            --button-border: #d1c9bd;
+            --accent-color: #4a6fa5;
+            --accent-text: #ffffff;
+            --correct-color: #2d8a4e;
+            --incorrect-color: #c84b4b;
+            --card-bg: #f5f0e6;
+        }
+
+        /* 弱視向けテーマ1: ソフトダーク (ハレーションを抑えた暗色) */
+        body.theme-dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffdd;
+            --button-bg: #333333;
+            --button-text: #ffffdd;
+            --button-border: #555555;
+            --accent-color: #64b5f6;
+            --accent-text: #1a1a1a;
+            --correct-color: #81c784;
+            --incorrect-color: #e57373;
+            --card-bg: #262626;
+        }
+
+        /* 弱視向けテーマ2: マイルドイエロー */
+        body.theme-yellow {
+            --bg-color: #ffffcc;
+            --text-color: #111111;
+            --button-bg: #e6e6b3;
+            --button-text: #111111;
+            --button-border: #999966;
+            --accent-color: #0044cc;
+            --accent-text: #ffffcc;
+            --correct-color: #007700;
+            --incorrect-color: #cc0000;
+            --card-bg: #ffffe0;
+        }
+
+        /* 弱視向けテーマ3: マイルドブルー */
+        body.theme-blue {
+            --bg-color: #eef5fc;
+            --text-color: #112233;
+            --button-bg: #ccddee;
+            --button-text: #112233;
+            --button-border: #aabbcc;
+            --accent-color: #0055aa;
+            --accent-text: #eef5fc;
+            --correct-color: #118833;
+            --incorrect-color: #cc2222;
+            --card-bg: #e1edf8;
+        }
+
+        /* 弱視向けテーマ4: 高コントラスト黒白 */
+        body.theme-blackwhite {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --button-bg: #1a1a1a;
+            --button-text: #ffffff;
+            --button-border: #888888;
+            --accent-color: #3b82f6;
+            --accent-text: #ffffff;
+            --correct-color: #4ade80;
+            --incorrect-color: #f87171;
+            --card-bg: #0d0d0d;
+        }
+
+        /* フォントサイズ設定 (CSS変数制御) */
+        body.size-small {
+            --font-base: 18px;
+            --font-title: 22px;
+            --font-question: 24px;
+        }
+        body.size-medium {
+            --font-base: 24px;
+            --font-title: 28px;
+            --font-question: 30px;
+        }
+        body.size-large {
+            --font-base: 32px;
+            --font-title: 36px;
+            --font-question: 38px;
+        }
+        body.size-xlarge {
+            --font-base: 40px;
+            --font-title: 44px;
+            --font-question: 46px;
+        }
+
+        /* 基本スタイル適用 */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: var(--font-base);
+            transition: background-color 0.2s, color 0.2s;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3 {
+            font-size: var(--font-title);
+            font-weight: bold;
+        }
+
+        .text-question {
+            font-size: var(--font-question);
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        /* 視覚障害者向けにフォーカス表示を非常に目立たせる */
+        button:focus, select:focus, input:focus {
+            outline: 5px solid var(--accent-color) !important;
+            outline-offset: 2px;
+        }
+
+        /* タッチターゲットを大きくし、ボタン同士の間隔を確保 */
+        .btn-custom {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: 3px solid var(--button-border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 4.5rem; /* 指で押しやすいサイズ */
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .btn-custom:hover, .btn-custom:active {
+            opacity: 0.9;
+            border-color: var(--accent-color);
+            transform: scale(0.99);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color) !important;
+            color: var(--accent-text) !important;
+            border-color: var(--accent-color) !important;
+        }
+
+        /* ボタン無効時の視覚的配慮 (コントラストを維持しつつ半透明に) */
+        .btn-custom:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--button-border) !important;
+        }
+
+        /* カードのスタイリング */
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--button-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 視覚的なセパレーター */
+        .separator {
+            border-top: 3px solid var(--button-border);
+            margin: 1.5rem 0;
+        }
+
+        /* 非表示クラス */
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="size-medium">
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+    <!-- 全体コンテナ -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
 
-        // --- 全120問のデータ定義 (第25回〜第34回) ---
-        const QUIZ_DATA = [
-            // 第25回
-            { id: '25-79', year: 25, num: 79, question: "ICFの「活動」に該当する内容はどれか。", options: ["腎機能", "調理", "筋力", "社会参加の促進"], answer: 1 },
-            { id: '25-80', year: 25, num: 80, question: "維持期リハビリテーションで主に取り組むべきことはどれか。", options: ["麻痺の回復の促進", "ADLの早期獲得", "社会参加の促進", "早期離床"], answer: 2 },
-            { id: '25-81', year: 25, num: 81, question: "高次脳機能障害の評価で正しいのはどれか。", options: ["バーセルインデックス", "線分抹消テスト", "徒手筋力テスト", "拮抗運動反復テスト"], answer: 1 },
-            { id: '25-82', year: 25, num: 82, question: "摂食嚥下障害に対する対応として誤っているのはどれか。", options: ["口腔ケア", "食形態の調整", "頚椎伸展位での食事", "栄養管理"], answer: 2 },
-            { id: '25-83', year: 25, num: 83, question: "錐体路の障害で生じるのはどれか。", options: ["アテトーゼ", "痙性麻痺", "運動失調", "筋の固縮"], answer: 1 },
-            { id: '25-84', year: 25, num: 84, question: "脳卒中の嚥下障害で正しいのはどれか。", options: ["食道の通過障害を生じる", "仮性球麻痺よりも球麻痺が多い", "ゼリーは飲み込みやすい", "時間経過で回復しにくい"], answer: 2 },
-            { id: '25-85', year: 25, num: 85, question: "脊髄損傷の合併症はどれか。", options: ["異所性骨化", "心筋梗塞", "認知症", "気胸"], answer: 0 },
-            { id: '25-86', year: 25, num: 86, question: "カナダ式ソケットの適応となるのはどれか。", options: ["股離断", "大腿切断", "下腿切断", "膝離断"], answer: 0 },
-            { id: '25-87', year: 25, num: 87, question: "脳性麻痺で起こる痙直型両麻痺の歩行について正しいのはどれか。", options: ["失調性歩行", "分回し歩行", "はさみ脚歩行", "トレンデレンブルグ歩行"], answer: 2 },
-            { id: '25-88', year: 25, num: 88, question: "心臓リハビリテーションにおける運動療法の禁忌はどれか。", options: ["心移植後", "冠動脈形成術後", "不安定狭心症", "末梢動脈閉塞性疾患"], answer: 2 },
-            { id: '25-89', year: 25, num: 89, question: "大腿骨頸部骨折のリハビリテーションで正しいのはどれか。", options: ["リハビリは手術後から開始する", "内固定術の場合、脱臼肢位に注意する", "極超短波療法を行う", "人工骨頭置換術の場合、術直後から歩行訓練を行う"], answer: 3 },
-            { id: '25-90', year: 25, num: 90, question: "パーキンソン病にみられる症状はどれか。", options: ["痙縮", "企図振戦", "鉛管現象", "折りたたみナイフ現象"], answer: 2 },
+        <!-- ========================================== -->
+        <!-- 1. アクセシビリティ設定パネル (常設)        -->
+        <!-- ========================================== -->
+        <header class="card mb-6" aria-label="アクセシビリティ設定">
+            <h1 class="text-center mb-4">🩺 国家試験 過去問演習ツール</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 配色テーマ -->
+                <div>
+                    <label for="theme-selector" class="block font-bold mb-1">■ 背景と文字の色 (ハレーション防止配色)</label>
+                    <select id="theme-selector" onchange="changeTheme(this.value)" class="w-full btn-custom p-3 text-left">
+                        <option value="default">標準（ソフトクリーム / 濃グレー）</option>
+                        <option value="dark">弱視用１（ソフト黒 / ソフト黄）</option>
+                        <option value="yellow">弱視用２（マイルド黄 / 濃グレー）</option>
+                        <option value="blue">弱視用３（マイルド青 / 濃紺）</option>
+                        <option value="blackwhite">弱視用４（真っ黒背景 / 真っ白文字）</option>
+                    </select>
+                </div>
 
-            // 第26回
-            { id: '26-79', year: 26, num: 79, question: "パーキンソン病でよくみられるのはどれか。", options: ["反張膝", "分回し歩行", "小刻み歩行", "膝折れ"], answer: 2 },
-            { id: '26-80', year: 26, num: 80, question: "機能的作業療法に含まれるのはどれか。", options: ["職業訓練", "自助具作製", "関節可動域訓練", "日常生活動作訓練"], answer: 2 },
-            { id: '26-81', year: 26, num: 81, question: "歩行補助具はどれか。", options: ["ロフストランド杖", "車椅子", "足底装具", "下肢装具"], answer: 0 },
-            { id: '26-82', year: 26, num: 82, question: "第6頸髄節残存の頸髄損傷患者で可能な動作はどれか。", options: ["車椅子への側方移乗", "ノブ付き車椅子駆動", "両長下肢装具での歩行", "肘伸展によるプッシュアップ"], answer: 1 },
-            { id: '26-83', year: 26, num: 83, question: "COPD患者に対する呼吸訓練はどれか。", options: ["体位変換法", "口すぼめ法", "スクイージング", "バイブレーション"], answer: 1 },
-            { id: '26-84', year: 26, num: 84, question: "急性期リハビリテーションとして「適切でない」のはどれか。", options: ["拘縮予防", "早期離床", "体位ドレナージ", "家事動作訓練"], answer: 3 },
-            { id: '26-85', year: 26, num: 85, question: "変形性膝関節症患者に対する生活指導として「誤っている」のはどれか。", options: ["杖の使用", "減量", "階段昇降訓練", "筋力増強訓練"], answer: 2 },
-            { id: '26-86', year: 26, num: 86, question: "膝蓋腱部で体重の大部分を支持する義足はどれか。", options: ["TSB式下腿義足", "PTB式下腿義足", "リスフラン義足", "サイム義足"], answer: 1 },
-            { id: '26-87', year: 26, num: 87, question: "片麻痺患者の歩行分析で「分回し歩行」の主な原因はどれか。", options: ["膝の屈曲障害", "体幹の不安定性", "足関節の背屈障害", "股関節の屈曲制限"], answer: 0 },
-            { id: '26-88', year: 26, num: 88, question: "低周波療法の禁忌として正しいのはどれか。", options: ["筋肉痛", "知覚障害", "ペースメーカー使用", "浮腫"], answer: 2 },
-            { id: '26-89', year: 26, num: 89, question: "関節リウマチの手指変形として正しいのはどれか。", options: ["ヘバーデン結節", "スワンネック変形", "マレットフィンガー", "強直指"], answer: 1 },
-            { id: '26-90', year: 26, num: 90, question: "脳性麻痺で最も多い病型はどれか。", options: ["失調型", "非緊張型", "アテトーゼ型", "痙直型"], answer: 3 },
+                <!-- 文字サイズ -->
+                <div>
+                    <label for="size-selector" class="block font-bold mb-1">■ 文字の大きさ</label>
+                    <select id="size-selector" onchange="changeFontSize(this.value)" class="w-full btn-custom p-3 text-left">
+                        <option value="small">文字：小 (18px)</option>
+                        <option value="medium" selected>文字：中 (24px)</option>
+                        <option value="large">文字：大 (32px)</option>
+                        <option value="xlarge">文字：極大 (40px)</option>
+                    </select>
+                </div>
+            </div>
+        </header>
 
-            // 第27回
-            { id: '27-79', year: 27, num: 79, question: "リハビリテーションの基本的理念はどれか。", options: ["完全な治癒", "全人間的復権", "早期退院", "職業訓練"], answer: 1 },
-            { id: '27-80', year: 27, num: 80, question: "廃用症候群に含まれるのはどれか。", options: ["心筋梗塞", "脳出血", "筋萎縮", "骨折"], answer: 2 },
-            { id: '27-81', year: 27, num: 81, question: "バーセルインデックスの項目はどれか。", options: ["計算", "整容", "記憶", "図形模写"], answer: 1 },
-            { id: '27-82', year: 27, num: 82, question: "ROM測定において肩関節外転の基本軸はどれか。", options: ["肩峰を通る垂直線", "上腕骨", "肩甲棘", "第7頸椎"], answer: 0 },
-            { id: '27-83', year: 27, num: 83, question: "下肢装具で「KAFO」が指すのはどれか。", options: ["足装具", "下腿装具", "長下肢装具", "股装具"], answer: 2 },
-            { id: '27-84', year: 27, num: 84, question: "脊髄損傷において自律神経過反射が起こりやすい損傷レベルはどれか。", options: ["C4以上", "T6以上", "L1以上", "S2以上"], answer: 1 },
-            { id: '27-85', year: 27, num: 85, question: "左半側空間無視で最も多い病巣はどれか。", options: ["右頭頂葉", "左側頭葉", "右後頭葉", "左前頭葉"], answer: 0 },
-            { id: '27-86', year: 27, num: 86, question: "骨粗鬆症の運動療法で適切なのはどれか。", options: ["水泳", "過度な安静", "荷重運動", "ベッド上の自動運動"], answer: 2 },
-            { id: '27-87', year: 27, num: 87, question: "10歳代に発症し、近位筋から萎縮する遺伝性疾患はどれか。", options: ["ALS", "デュシェンヌ型筋ジストロフィー", "ベッカー型筋ジストロフィー", "脊髄小脳変性症"], answer: 2 },
-            { id: '27-88', year: 27, num: 88, question: "変形性膝関節症のリハビリテーションで強化すべき筋肉はどれか。", options: ["ハムストリングス", "大腿四頭筋", "下腿三頭筋", "前脛骨筋"], answer: 1 },
-            { id: '27-89', year: 27, num: 89, question: "脳性麻痺の痙直型両麻痺患者におけるリハビリテーションで適切なのはどれか。", options: ["立位訓練", "強固な固定", "筋力低下の放置", "早期の就職訓練"], answer: 0 },
-            { id: '27-90', year: 27, num: 90, question: "言語聴覚療法の対象とならないのはどれか。", options: ["失語症", "構音障害", "嚥下障害", "視力障害"], answer: 3 },
+        <!-- 通知エリア -->
+        <div id="notification-bar" class="hidden p-4 mb-4 text-center rounded-xl font-bold bg-yellow-100 text-yellow-900 border border-yellow-300" role="alert"></div>
 
-            // 第28回
-            { id: '28-79', year: 28, num: 79, question: "ICFで「個人的要因」に含まれるのはどれか。", options: ["家族のサポート", "住宅環境", "年齢・性別", "手すりの設置"], answer: 2 },
-            { id: '28-80', year: 28, num: 80, question: "ADLの評価に含まれないのはどれか。", options: ["食事", "排泄", "入浴", "家事"], answer: 3 },
-            { id: '28-81', year: 28, num: 81, question: "FIM（機能的自立度評価法）の最高点はどれか。", options: ["100点", "126点", "150点", "200点"], answer: 1 },
-            { id: '28-82', year: 28, num: 82, question: "脳卒中の急性期リハビリテーションで優先されるのはどれか。", options: ["家事動作訓練", "良肢位保持", "階段昇降訓練", "復職支援"], answer: 1 },
-            { id: '28-83', year: 28, num: 83, question: "失語症患者とのコミュニケーションで適切なのはどれか。", options: ["大声で話す", "早口で話す", "「はい」「いいえ」で答えられる質問にする", "一度に多くのことを伝える"], answer: 2 },
-            { id: '28-84', year: 28, num: 84, question: "車椅子の座幅の合わせ方で正しいのはどれか。", options: ["臀部幅と同じ", "臀部幅 + 2〜5cm", "臀部幅 + 10cm", "特に決まりはない"], answer: 1 },
-            { id: '28-85', year: 28, num: 85, question: "大腿切断後の切断端管理で誤っているのはどれか。", options: ["弾力包帯による圧迫", "関節拘縮の予防", "筋力の維持", "常に挙上しておく"], answer: 3 },
-            { id: '28-86', year: 28, num: 86, question: "下腿切断後の義足で最も一般的なソケットはどれか。", options: ["吸着式", "PTBソケット", "カナダ式", "四角ソケット"], answer: 1 },
-            { id: '28-87', year: 28, num: 87, question: "小児リハビリテーションで「原始反射」として残存が問題となるのはどれか。", options: ["パラシュート反応", "立ち直り反射", "非対称性緊張性頸反射", "平衡反応"], answer: 2 },
-            { id: '28-88', year: 28, num: 88, question: "心疾患患者のリハビリテーションにおける中止基準はどれか。", options: ["軽度の疲労感", "心拍数のわずかな上昇", "激しい胸痛", "意欲の向上"], answer: 2 },
-            { id: '28-89', year: 28, num: 89, question: "リハビリテーション病院において機能訓練室の基準として正しいのはどれか。", options: ["十分な広さと設備", "地下室の利用", "窓のない部屋", "共有スペースのみ"], answer: 0 },
-            { id: '28-90', year: 28, num: 90, question: "パーキンソン病の姿勢異常として正しいのはどれか。", options: ["前屈姿勢", "反張膝", "側弯", "円背"], answer: 0 },
+        <!-- ========================================== -->
+        <!-- 2. CSVロードエリア                          -->
+        <!-- ========================================== -->
+        <section id="csv-loader-section" class="card">
+            <h2 class="mb-2">📁 問題データの読み込み状況</h2>
+            <div id="data-status-message" class="font-bold text-red-500 mb-3">
+                データをロードしています。お待ちください...
+            </div>
+            
+            <div id="manual-load-box" class="hidden p-4 border-2 border-dashed border-gray-400 rounded-lg">
+                <p class="mb-3 font-bold">⚠️ 自動ロードに失敗したか、ローカル環境(file://)で実行しています。</p>
+                <p class="mb-3 text-sm">フォルダ内にある「25-34Exam.csv」ファイルを以下のボタンから選択してください。</p>
+                <input type="file" id="csv-file-input" accept=".csv" onchange="handleManualCSVUpload(event)" class="block w-full text-lg p-2 border-2 border-gray-300 rounded-lg">
+            </div>
+        </section>
 
-            // 第29回
-            { id: '29-79', year: 29, num: 79, question: "ADLの評価指標はどれか。", options: ["FIM", "MMSE", "HDS-R", "VAS"], answer: 0 },
-            { id: '29-80', year: 29, num: 80, question: "リハビリテーションチームにおいて社会資源の活用を主に担当するのは誰か。", options: ["理学療法士", "作業療法士", "ソーシャルワーカー", "看護師"], answer: 2 },
-            { id: '29-81', year: 29, num: 81, question: "間欠跛行を呈する疾患はどれか。", options: ["変形性股関節症", "腰部脊柱管狭窄症", "脳梗塞", "パーキンソン病"], answer: 1 },
-            { id: '29-82', year: 29, num: 82, question: "脊髄損傷患者の褥瘡予防として最も重要なのはどれか。", options: ["栄養管理", "こまめな除圧", "軟膏塗布", "マッサージ"], answer: 1 },
-            { id: '29-83', year: 29, num: 83, question: "摂食下障害の評価法である「MWST」とは何か。", options: ["水飲みテスト", "改訂水飲みテスト", "反復唾液飲みテスト", "食物テスト"], answer: 1 },
-            { id: '29-84', year: 29, num: 84, question: "嚥下訓練における間接訓練はどれか。", options: ["ゼリーを用いた訓練", "トロミ水を用いた訓練", "頸部回旋", "バルーン訓練"], answer: 2 },
-            { id: '29-85', year: 29, num: 85, question: "脳血管障害の評価で「ブルンストローム・ステージ」が評価するのはどれか。", options: ["日常生活動作", "麻痺の回復段階", "言語能力", "認知機能"], answer: 1 },
-            { id: '29-86', year: 29, num: 86, question: "大腿骨近位部骨折の術後、早期離床を阻害する因子はどれか。", options: ["認知症", "適切な除痛", "リハビリの意欲", "家族の協力"], answer: 0 },
-            { id: '29-87', year: 29, num: 87, question: "関節リウマチのケアで正しいのはどれか。", options: ["朝のこわばり時は強めのマッサージ", "疼痛があるときは安静にする", "重い荷物を指先で持つ", "冷湿布を常用する"], answer: 1 },
-            { id: '29-88', year: 29, num: 88, question: "心不全患者の生活指導で誤っているのはどれか。", options: ["塩分制限", "急激な運動の回避", "水分制限", "高強度な筋力トレーニング"], answer: 3 },
-            { id: '29-89', year: 29, num: 89, question: "切断端の成熟に寄与するのはどれか。", options: ["挙上の継続", "温熱療法", "弾性包帯による圧迫", "運動の制限"], answer: 2 },
-            { id: '29-90', year: 29, num: 90, question: "車椅子の駆動で、片手片足駆動の適応となるのはどれか。", options: ["截癱", "片麻痺", "四肢麻痺", "両下肢切断"], answer: 1 },
+        <!-- ========================================== -->
+        <!-- 3. メインメニュー（モード選択）             -->
+        <!-- ========================================== -->
+        <main id="menu-screen" class="hidden">
+            
+            <!-- レジューム（続きから再開）ボタン -->
+            <div id="resume-container" class="hidden card bg-green-100 border-green-500 text-green-900">
+                <h2 class="text-green-800 mb-2">🔄 前回の演習が途中で保存されています</h2>
+                <p class="mb-4">前回の続き（残り問題）から開始できます。</p>
+                <button onclick="resumeSession()" class="w-full btn-custom btn-accent text-2xl">
+                    ▶️ 前回の続きから再開する
+                </button>
+            </div>
 
-            // 第30回
-            { id: '30-79', year: 30, num: 79, question: "関節可動域測定（ROM）の基本軸で正しいのはどれか。", options: ["膝屈曲は股関節結節", "肩外転は肩峰を通る垂直線", "股外転は両側の上前腸骨棘を結ぶ線への垂直線", "手掌屈は橈骨"], answer: 1 },
-            { id: '30-80', year: 30, num: 80, question: "徒手筋力テスト（MMT）で「重力に抗して全可動域動かせる」のはどれか。", options: ["段階2", "段階3", "段階4", "段階5"], answer: 1 },
-            { id: '30-81', year: 30, num: 81, question: "廃用症候群の症状でないのはどれか。", options: ["筋萎縮", "起立性低血圧", "関節拘縮", "血圧上昇"], answer: 3 },
-            { id: '30-82', year: 30, num: 82, question: "ICFで「環境因子」に該当するのはどれか。", options: ["住宅改修", "自分の性格", "病気の診断名", "仕事の内容"], answer: 0 },
-            { id: '30-83', year: 30, num: 83, question: "リハビリテーションチームにおける中心的存在はどれか。", options: ["医師", "理学療法士", "患者と家族", "ソーシャルワーカー"], answer: 2 },
-            { id: '30-84', year: 30, num: 84, question: "脳卒中のリハビリテーションで、歩行自立を予測する因子はどれか。", options: ["座位保持能力", "麻痺の程度", "年齢", "高次脳機能障害の有無"], answer: 0 },
-            { id: '30-85', year: 30, num: 85, question: "脊髄損傷患者の排尿管理で最も推奨されるのはどれか。", options: ["留置カテーテル", "自然排尿", "清潔間欠自己導尿", "おむつ対応"], answer: 2 },
-            { id: '30-86', year: 30, num: 86, question: "失認症のひとつ「相貌失認」とは何か。", options: ["物の名前が言えない", "顔の区別がつかない", "文字が読めない", "左右がわからない"], answer: 1 },
-            { id: '30-87', year: 30, num: 87, question: "小児の運動発達の順番で正しいのはどれか。", options: ["首がすわる→お座り→寝返り", "首がすわる→寝返り→お座り", "寝返り→首がすわる→お座り", "お座り→寝返り→首がすわる"], answer: 1 },
-            { id: '30-88', year: 30, num: 88, question: "関節リウマチの急性期に対するリハビリテーションとして適切なのはどれか。", options: ["強固な筋力訓練", "積極的な自動運動", "安静と良肢位の保持", "長時間歩行"], answer: 2 },
-            { id: '30-89', year: 30, num: 89, question: "心臓リハビリテーションの適応とならないのはどれか。", options: ["心筋梗塞後", "大動脈解離の急性期", "狭心症", "心不全（代償期）"], answer: 1 },
-            { id: '30-90', year: 30, num: 90, question: "大腿四頭筋の筋力強化として適切なのはどれか。", options: ["SLR運動", "足関節背屈運動", "股関節外転運動", "上腕三頭筋運動"], answer: 0 },
+            <!-- A. 科目別演習 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📖 A. 科目別演習</h2>
+                <p class="mb-4 text-sm">科目と試験回数を選んで練習します。回数を指定しない場合は過去10回分の全問題から出題されます。「総合(基礎)」「総合(専門)」以外の科目はランダムに出題されます。</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="subject-select" class="block font-bold mb-1">1. 科目を選択する</label>
+                        <select id="subject-select" class="w-full btn-custom p-3 text-left">
+                            <option value="">-- 科目を選択してください --</option>
+                        </select>
+                    </div>
 
-            // 第31回
-            { id: '31-63', year: 31, num: 63, question: "要介護認定において最も多い原因はどれか。", options: ["認知症", "脳血管疾患", "高齢による衰弱", "骨折・転倒"], answer: 0 },
-            { id: '31-64', year: 31, num: 64, question: "バーセルインデックスの最高点はどれか。", options: ["50点", "100点", "126点", "150点"], answer: 1 },
-            { id: '31-65', year: 31, num: 65, question: "失語症の種類で、流暢に話すが言い間違い（錯語）が多いのはどれか。", options: ["ブローカ失語", "ウェルニッケ失語", "全失語", "健忘失語"], answer: 1 },
-            { id: '31-66', year: 31, num: 66, question: "頸髄損傷（C6レベル）で可能なADLはどれか。", options: ["書字（装具なし）", "車椅子駆動（ノブ付き）", "完全な歩行", "階段昇降"], answer: 1 },
-            { id: '31-67', year: 31, num: 67, question: "内部障害のリハビリテーション対象とならないのはどれか。", options: ["心筋梗塞", "糖尿病", "白内障", "慢性閉塞性肺疾患"], answer: 2 },
-            { id: '31-68', year: 31, num: 68, question: "嚥下障害に対する「トロミ剤」の役割はどれか。", options: ["味を良くする", "栄養価を高める", "通過速度を遅くし誤嚥を防ぐ", "殺菌効果"], answer: 2 },
-            { id: '31-69', year: 31, num: 69, question: "パーキンソン病の4大症状でないのはどれか。", options: ["安静時振戦", "無動", "痙縮", "姿勢反射障害"], answer: 2 },
-            { id: '31-70', year: 31, num: 70, question: "骨粗鬆症による骨折が起こりやすい部位はどれか。", options: ["胸骨", "脊椎椎体", "肩甲骨", "腓骨"], answer: 1 },
-            { id: '31-71', year: 31, num: 71, question: "切断端の成熟を促進するために行うのはどれか。", options: ["常に冷やす", "弾性包帯によるシュリンカー処置", "安静の保持", "何もせず自然治癒を待つ"], answer: 1 },
-            { id: '31-72', year: 31, num: 72, question: "リハビリテーション専門職で、自助具の作製を主に行うのは誰か。", options: ["理学療法士", "作業療法士", "言語聴覚士", "視能訓練士"], answer: 1 },
-            { id: '31-73', year: 31, num: 73, question: "回復期リハビリテーションの最大の目的はどれか。", options: ["病気の完治", "ADLの向上と家庭復帰", "長期的な介護施設への入所", "延命処置"], answer: 1 },
-            { id: '31-74', year: 31, num: 74, question: "杖の長さの合わせ方で、大転子の高さに合わせる杖はどれか。", options: ["松葉杖", "T字杖", "ロフストランド杖", "サイドウォーカー"], answer: 1 },
+                    <div>
+                        <label for="subject-year-select" class="block font-bold mb-1">2. 試験回数を選択する (任意)</label>
+                        <select id="subject-year-select" class="w-full btn-custom p-3 text-left">
+                            <option value="all">過去10回分すべてを対象（選択なし）</option>
+                        </select>
+                    </div>
 
-            // 第32回
-            { id: '32-63', year: 32, num: 63, question: "ICFにおいて、生活機能の構成要素でないのはどれか。", options: ["心身機能・身体構造", "活動", "参加", "環境因子"], answer: 3 },
-            { id: '32-64', year: 32, num: 64, question: "サルコペニアの診断基準に含まれないのはどれか。", options: ["歩行速度の低下", "握力の低下", "骨密度の低下", "筋肉量の減少"], answer: 2 },
-            { id: '32-65', year: 32, num: 65, question: "要介護認定のプロセスで、最初に実施されるのはどれか。", options: ["二次判定", "ケアプラン作成", "訪問調査", "主治医意見書の作成"], answer: 2 },
-            { id: '32-66', year: 32, num: 66, question: "脳梗塞発症直後のリハビリテーションについて正しいのはどれか。", options: ["1週間は絶対安静とする", "24〜48時間以内に早期離床を開始する", "麻痺側のみ動かす", "最初から歩行訓練を行う"], answer: 1 },
-            { id: '32-67', year: 32, num: 67, question: "左片麻痺患者に多い高次脳機能障害はどれか。", options: ["失語症", "左半側空間無視", "純粋失読", "失茶"], answer: 1 },
-            { id: '32-68', year: 32, num: 68, question: "脊髄損傷（第4頸髄節まで）の患者で自律呼吸を維持するために必要な神経はどれか。", options: ["横隔神経", "坐骨神経", "橈骨神経", "大腿神経"], answer: 0 },
-            { id: '32-69', year: 32, num: 69, question: "廃用症候群による筋力低下の速度は、1日あたりどの程度か。", options: ["0.1%", "1〜3%", "10%", "20%"], answer: 1 },
-            { id: '32-70', year: 32, num: 70, question: "嚥下障害に対する「直接訓練」はどれか。", options: ["頸部可動域訓練", "呼吸訓練", "少量のゼリー摂取", "冷感刺激"], answer: 2 },
-            { id: '32-71', year: 32, num: 71, question: "車椅子のキャスターの役割はどれか。", options: ["ブレーキ", "旋回と進行方向の決定", "衝撃吸収のみ", "段差を乗り越える専用具"], answer: 1 },
-            { id: '32-72', year: 32, num: 72, question: "変形性膝関節症のX線所見として誤っているのはどれか。", options: ["関節裂隙の狭小化", "骨棘の形成", "骨嚢胞", "骨密度の著明な上昇"], answer: 3 },
-            { id: '32-73', year: 32, num: 73, question: "脳性麻痺の分類で、不随意運動を主症状とするのはどれか。", options: ["痙直型", "アテトートゼ型", "失調型", "強剛型"], answer: 1 },
-            { id: '32-74', year: 32, num: 74, question: "義肢装具士の主な職務はどれか。", options: ["リハビリプログラムの立案", "義肢や装具の製作と適合", "栄養指導", "家事訓練"], answer: 1 },
+                    <button onclick="startSubjectSession()" class="w-full btn-custom btn-accent mt-4 text-xl">
+                        🔥 この設定で科目別演習を開始する
+                    </button>
+                </div>
+            </section>
 
-            // 第33回
-            { id: '33-63', year: 33, num: 63, question: "廃用症候群を予防するために最も有効なのはどれか。", options: ["高タンパク食", "早期離床", "十分な睡眠", "マッサージ"], answer: 1 },
-            { id: '33-64', year: 33, num: 64, question: "FIM（機能的自立度評価法）の項目で、「運動項目」は何項目あるか。", options: ["5項目", "13項目", "18項目", "20項目"], answer: 1 },
-            { id: '33-65', year: 33, num: 65, question: "ブルンストローム・ステージで、共同運動のみが出現するステージはどれか。", options: ["ステージI", "ステージII", "ステージIII", "ステージIV"], answer: 2 },
-            { id: '33-66', year: 33, num: 66, question: "左頭頂葉の病変で生じやすい症状はどれか。", options: ["左半側空間無視", "失認・失行", "顔面神経麻痺", "難聴"], answer: 1 },
-            { id: '33-67', year: 33, num: 67, question: "回復期リハビリテーション病棟の対象疾患として正しいのはどれか。", options: ["心不全", "肺炎", "大腿骨頸部骨折", "急性腎不全"], answer: 2 },
-            { id: '33-68', year: 33, num: 68, question: "脊髄損傷患者の合併症として、致命的になりやすいのはどれか。", options: ["関節拘縮", "深部静脈血栓症", "軽度の皮膚欠損", "筋萎縮"], answer: 1 },
-            { id: '33-69', year: 33, num: 69, question: "下腿義足でPTB式ソケットの体重支持部位はどこか。", options: ["切断端の先端", "坐骨", "膝蓋腱", "大腿部全体"], answer: 2 },
-            { id: '33-70', year: 33, num: 70, question: "COPD患者に対する生活指導で適切なのはどれか。", options: ["息を止めて動作を行う", "歩行中に息を吸う", "口すぼめ呼吸を意識する", "前屈み姿勢を避ける"], answer: 2 },
-            { id: '33-71', year: 33, num: 71, question: "高齢者の転倒予防として最も重要なのはどれか。", options: ["視力の矯正", "下肢の筋力強化", "住宅改修（手すりの設置）", "すべての選択肢が正しい"], answer: 3 },
-            { id: '33-72', year: 33, num: 72, question: "デュシェンヌ型筋ジストロフィーでみられる徴候はどれか。", options: ["ガワーズ徴候", "ロムベルグ徴候", "トレンデレンブルグ徴候", "バビンスキー徴候"], answer: 0 },
-            { id: '33-73', year: 33, num: 73, question: "リハビリテーションでの言語聴覚士の役割はどれか。", options: ["義肢の調整", "嚥下訓練の実施", "住宅改修の指導", "車椅子のフィッティング"], answer: 1 },
-            { id: '33-74', year: 33, num: 74, question: "関節リウマチの日常生活指導で「誤っている」のはどれか。", options: ["コップを手のひらで持つ", "ドアノブをレバー式に変える", "疼痛があるときは強行して動かす", "厚手の靴下を履く"], answer: 2 },
+            <!-- B. 模擬試験 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📝 B. 模擬試験</h2>
+                <p class="mb-4 text-sm">国家試験の回数を1つ選択し、1番から160番まで順番通りに実力試しを行います。</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="mock-year-select" class="block font-bold mb-1">試験回数を選択する</label>
+                        <select id="mock-year-select" class="w-full btn-custom p-3 text-left">
+                            <option value="">-- 国家試験回数を選択してください --</option>
+                        </select>
+                    </div>
 
-            // 第34回
-            { id: '34-63', year: 34, num: 63, question: "2022年の国民生活基礎調査で要介護5の原因として最も多いのはどれか。", options: ["認知症", "脳血管疾患", "骨折・転倒", "高齢による衰弱"], answer: 1 },
-            { id: '34-64', year: 34, num: 64, question: "回復期リハビリテーションで、作業療法として行われるのはどれか。", options: ["ADL訓練", "間接嚥下訓練", "荷重歩行訓練", "腹式呼吸訓練"], answer: 0 },
-            { id: '34-65', year: 34, num: 65, question: "脊髄損傷患者に生じる自律神経過反射について正しいのはどれか。", options: ["起立性低血圧を生じる", "けいれん発作を合併する", "頻脈を生じる", "膀胱の過膨張が誘因となる"], answer: 3 },
-            { id: '34-66', year: 34, num: 66, question: "心臓リハビリテーションにおける運動療法の禁忌はどれか。", options: ["末梢動脈閉塞性疾患", "持続性心室頻拍", "冠動脈形成術後", "ペースメーカー留置術後"], answer: 1 },
-            { id: '34-67', year: 34, num: 67, question: "拘束性換気障害をきたす疾患として最も適切なのはどれか。", options: ["気管支喘息", "気管支肺炎", "COPD", "間質性肺炎"], answer: 3 },
-            { id: '34-68', year: 34, num: 68, question: "FIM（機能的自立度評価法）の項目に含まれるのはどれか。", options: ["計算", "食事", "洗濯", "調理"], answer: 1 },
-            { id: '34-69', year: 34, num: 69, question: "失語症の種類で、意味の通らない言葉を流暢に話すのはどれか。", options: ["ブローカ失語", "ウェルニッケ失語", "全失語", "健忘失語"], answer: 1 },
-            { id: '34-70', year: 34, num: 70, question: "骨粗鬆症による骨折が最も起こりやすいのはどれか。", options: ["鎖骨", "肩甲骨", "脊椎椎体", "脛骨"], answer: 2 },
-            { id: '34-71', year: 34, num: 71, question: "サルコペニアの診断基準に含まれないのはどれか。", options: ["歩行速度の低下", "握力の低下", "骨密度の低下", "筋肉量の減少"], answer: 2 },
-            { id: '34-72', year: 34, num: 72, question: "パーキンソン病におけるホーン・ヤールの重症度分類において、「両側性障害を示すが、姿勢反射障害を呈さない状態」はどれか。", options: ["ステージI", "ステージII", "ステージIII", "ステージIV"], answer: 1 },
-            { id: '34-73', year: 34, num: 73, question: "変形性膝関節症の危険因子として誤っているのはどれか。", options: ["高齢", "肥満", "男性", "膝外傷の既往"], answer: 2 },
-            { id: '34-74', year: 34, num: 74, question: "パーキンソン病で生じる歩行障害はどれか。", options: ["鶏歩", "間欠跛行", "すくみ足", "らくだ歩行"], answer: 2 },
-        ];
+                    <button onclick="startMockSession()" class="w-full btn-custom btn-accent mt-4 text-xl">
+                        ✏️ 模擬試験を開始する (1〜160番)
+                    </button>
+                </div>
+            </section>
 
-        const YEARS = Array.from(new Set(QUIZ_DATA.map(d => d.year))).sort((a, b) => b - a);
+            <!-- C. 弱点克服演習（新規追加） -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">❌ C. 弱点克服演習（間違えた問題）</h2>
+                <p class="mb-4 text-sm">演習や模擬試験で間違えた問題が自動で記録されます。このモードで正解するとリストから自動で消去され、苦手問題の完全克服を目指せます。</p>
+                
+                <div class="space-y-4">
+                    <div class="p-4 bg-black bg-opacity-10 rounded-xl text-center">
+                        現在の弱点問題ストック: 
+                        <span id="incorrect-count-display" class="text-3xl font-black text-red-500 mx-2">0</span> 問
+                    </div>
 
-        // アイコンコンポーネント (SVGパス版)
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const icons = {
-                home: `<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
-                settings: `<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>`,
-                play: `<polygon points="5 3 19 12 5 21 5 3"/>`,
-                rotate: `<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/>`,
-                left: `<polyline points="15 18 9 12 15 6"/>`,
-                right: `<polyline points="9 18 15 12 9 6"/>`,
-                check: `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`,
-                x: `<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>`,
-                brain: `<path d="M9.5 2a2.5 2.5 0 0 1 5 0M12 14v3M12 19h.01M16 4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1M8 4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1M18 11a4 4 0 0 1 4 4v1a2 2 0 0 1-2 2h-2M6 11a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h2"/>`,
-                trash: `<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`,
-                save: `<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`,
-                alert: `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`
-            };
-            return (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}
-                    dangerouslySetInnerHTML={{ __html: icons[name] }}
-                />
-            );
+                    <button id="start-incorrect-btn" onclick="startIncorrectSession()" class="w-full btn-custom btn-accent text-xl" disabled>
+                        🔄 弱点克服演習を開始する (ランダム出題)
+                    </button>
+                </div>
+            </section>
+
+            <!-- 成績履歴・変化 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📈 成績履歴と学習変化</h2>
+                
+                <!-- SVG グラフコンテナ -->
+                <div class="mb-6">
+                    <p class="font-bold mb-2">■ 最近の正解率の推移 (過去最大20回分)</p>
+                    <div id="graph-container">
+                        <!-- 動的SVGグラフがここに挿入されます -->
+                    </div>
+                </div>
+
+                <div class="separator"></div>
+
+                <!-- 履歴テーブル -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="history-table">
+                        <thead>
+                            <tr class="border-b-2 border-gray-400">
+                                <th class="p-2">日時</th>
+                                <th class="p-2">内容</th>
+                                <th class="p-2">解答数</th>
+                                <th class="p-2">正解率</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <!-- 履歴行がここに挿入されます -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- オールリセット -->
+                <div class="mt-6 text-right">
+                    <button onclick="confirmAllReset()" class="px-6 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 border-2 border-red-900">
+                        ⚠️ 履歴と進行状況をすべて初期化する
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- ========================================== -->
+        <!-- 4. 演習中画面（学習画面）                   -->
+        <!-- ========================================== -->
+        <section id="quiz-screen" class="hidden">
+            <!-- 進捗表示と一時停止 -->
+            <div class="flex flex-wrap items-center justify-between gap-4 card mb-4">
+                <div>
+                    <span id="quiz-badge" class="px-3 py-1 rounded bg-blue-700 text-white font-bold mr-2 text-sm">科目別</span>
+                    <span id="quiz-info" class="font-bold">第30回 医療概論</span>
+                </div>
+                <div class="font-bold text-lg">
+                    進行状況: <span id="quiz-progress" class="text-xl">1/50</span> 問目
+                </div>
+                <button onclick="stopAndSaveQuiz()" class="btn-custom py-2 min-h-[3rem] bg-orange-700 text-white hover:bg-orange-800">
+                    ⏸ 途中で修了して保存
+                </button>
+            </div>
+
+            <!-- 問題カード -->
+            <div class="card mb-4">
+                <div class="flex justify-between items-start mb-2">
+                    <span id="quiz-num-display" class="font-bold border-b-2 border-gray-400">問題 番号不明</span>
+                </div>
+                <div id="quiz-question-text" class="text-question mt-2 mb-4">
+                    ここに問題文が表示されます。
+                </div>
+            </div>
+
+            <!-- 選択肢ボタン群 (4つの大きなボタン) -->
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <button id="opt-btn-1" onclick="submitAnswer('1')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">①</span> <span id="opt-text-1">選択肢1</span>
+                </button>
+                <button id="opt-btn-2" onclick="submitAnswer('2')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">②</span> <span id="opt-text-2">選択肢2</span>
+                </button>
+                <button id="opt-btn-3" onclick="submitAnswer('3')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">③</span> <span id="opt-text-3">選択肢3</span>
+                </button>
+                <button id="opt-btn-4" onclick="submitAnswer('4')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">④</span> <span id="opt-text-4">選択肢4</span>
+                </button>
+            </div>
+
+            <!-- 解答判定フィードバックエリア -->
+            <div id="feedback-area" class="hidden card text-center border-4">
+                <div id="feedback-result" class="text-3xl font-black mb-3">判定</div>
+                <div id="feedback-detail" class="text-xl mb-4">正解は2番です。</div>
+                <button id="next-question-btn" onclick="nextQuestion()" class="w-full btn-custom btn-accent text-2xl">
+                    次へ進む ▶️
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 5. 結果発表画面                            -->
+        <!-- ========================================== -->
+        <section id="result-screen" class="hidden card text-center">
+            <h2 class="text-3xl mb-4">🎉 演習が終了しました！</h2>
+            <div class="separator"></div>
+
+            <div class="my-6">
+                <p class="font-bold">結果発表</p>
+                <div class="text-4xl md:text-6xl font-black my-4 text-green-600" id="result-score-display">
+                    45 / 50 問正解
+                </div>
+                <div class="text-2xl font-bold" id="result-percent-display">
+                    正解率: 90%
+                </div>
+            </div>
+
+            <div class="separator"></div>
+            
+            <button onclick="backToMenu()" class="w-full btn-custom btn-accent text-xl">
+                🏠 メインメニューへ戻る
+            </button>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- リセット・警告等のカスタムダイアログ         -->
+        <!-- ========================================== -->
+        <div id="dialog-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+            <div class="bg-white text-black p-6 rounded-2xl max-w-lg w-full border-4 border-gray-600">
+                <h3 id="dialog-title" class="text-2xl font-bold mb-4 text-red-700">警告</h3>
+                <p id="dialog-message" class="text-lg mb-6">メッセージがここに表示されます。</p>
+                <div class="flex gap-4">
+                    <button id="dialog-cancel-btn" class="flex-1 btn-custom bg-gray-200 text-black border-gray-400">キャンセル</button>
+                    <button id="dialog-confirm-btn" class="flex-1 btn-custom bg-red-700 text-white border-red-900">実行する</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript ロジック -->
+    <script>
+        // グローバル変数
+        let rawQuestions = []; // CSVから読み込んだ全問題データ
+        let currentSession = null; // 現在の演習セッション
+
+        // アプリ起動時に実行
+        window.onload = async function() {
+            // ローカルストレージから各種設定を復元
+            initSettings();
+
+            // 成績履歴と中断データがあれば表示
+            renderHistoryAndGraph();
+            checkSavedSession();
+            updateIncorrectCountDisplay();
+
+            // 1. 自動で CSV フェッチを試みる
+            updateStatusMessage("サーバーから問題データを自動読込中...");
+            const success = await tryAutoFetchCSV();
+            if (!success) {
+                // 自動フェッチ失敗。ローカルキャッシュをチェック
+                const cachedData = localStorage.getItem('cached_csv_data');
+                if (cachedData) {
+                    updateStatusMessage("キャッシュから問題データを復元しました。");
+                    processCSVData(cachedData);
+                } else {
+                    updateStatusMessage("問題データが未読込です。手動でロードしてください。");
+                    document.getElementById('manual-load-box').classList.remove('hidden');
+                }
+            }
         };
 
-        function App() {
-            const [view, setView] = useState('menu');
-            const [questions, setQuestions] = useState([]);
-            const [currentIndex, setCurrentIndex] = useState(0);
-            const [history, setHistory] = useState([]);
-            const [selectedYear, setSelectedYear] = useState('all');
-            const [isRandom, setIsRandom] = useState(false);
-            const [stats, setStats] = useState({});
-            const [showClearConfirm, setShowClearConfirm] = useState(false);
-            const [settings, setSettings] = useState({ bgColor: '#f8fafc', textColor: '#1e293b', fontSize: 18 });
+        // ==========================================
+        // 設定管理 (アクセシビリティ)
+        // ==========================================
+        function initSettings() {
+            // 配色テーマ復元
+            const savedTheme = localStorage.getItem('user_theme') || 'default';
+            document.getElementById('theme-selector').value = savedTheme;
+            changeTheme(savedTheme);
 
-            // データの読み込み
-            useEffect(() => {
-                const saved = localStorage.getItem('reha_quiz_storage');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.settings) setSettings(prev => ({ ...prev, ...parsed.settings }));
-                    if (parsed.stats) setStats(parsed.stats);
-                }
-            }, []);
+            // フォントサイズ復元
+            const savedSize = localStorage.getItem('user_font_size') || 'medium';
+            document.getElementById('size-selector').value = savedSize;
+            changeFontSize(savedSize);
+        }
 
-            // データの保存
-            const saveCurrentState = (overrides = {}) => {
-                const currentState = { view, questions, currentIndex, history, selectedYear, isRandom, settings, stats, ...overrides };
-                localStorage.setItem('reha_quiz_storage', JSON.stringify(currentState));
-            };
+        function changeTheme(theme) {
+            document.body.className = document.body.className.replace(/\btheme-\S+/g, '');
+            if (theme !== 'default') {
+                document.body.classList.add('theme-' + theme);
+            }
+            localStorage.setItem('user_theme', theme);
+        }
 
-            const resumeSession = () => {
-                const saved = localStorage.getItem('reha_quiz_storage');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.questions && parsed.questions.length > 0) {
-                        setQuestions(parsed.questions);
-                        setCurrentIndex(parsed.currentIndex);
-                        setHistory(parsed.history);
-                        setSelectedYear(parsed.selectedYear);
-                        setIsRandom(parsed.isRandom);
-                        setView('quiz');
+        function changeFontSize(size) {
+            document.body.className = document.body.className.replace(/\bsize-\S+/g, '');
+            document.body.classList.add('size-' + size);
+            localStorage.setItem('user_font_size', size);
+        }
+
+        // ==========================================
+        // 文字コードの自動判定デコーダー (UTF-8 / Shift-JIS)
+        // ==========================================
+        function decodeText(arrayBuffer) {
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // 1. UTF-8 BOMのチェック (EF BB BF)
+            if (uint8Array.length >= 3 && uint8Array[0] === 0xEF && uint8Array[1] === 0xBB && uint8Array[2] === 0xBF) {
+                return new TextDecoder('utf-8').decode(uint8Array.subarray(3));
+            }
+
+            // 2. まずはUTF-8で厳密にデコードを試みる
+            try {
+                const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+                return utf8Decoder.decode(uint8Array);
+            } catch (e) {
+                // UTF-8でエラーが発生した（不正なバイトがある）場合、日本語Windows標準のShift-JIS(CP932等)でデコード
+                console.log("UTF-8デコードに失敗しました。Shift-JISとしてデコードを試みます。");
+                const sjisDecoder = new TextDecoder('shift-jis');
+                return sjisDecoder.decode(uint8Array);
+            }
+        }
+
+        // ==========================================
+        // CSVのフェッチとパース
+        // ==========================================
+        async function tryAutoFetchCSV() {
+            try {
+                const response = await fetch('25-34Exam.csv');
+                if (response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    const text = decodeText(arrayBuffer);
+                    const parseSuccess = processCSVData(text);
+                    if (parseSuccess) {
+                        document.getElementById('manual-load-box').classList.add('hidden');
+                        return true;
                     }
                 }
-            };
+            } catch (e) {
+                console.warn("Auto-fetch failed or CORS blocked. Manual upload option available.", e);
+            }
+            return false;
+        }
 
-            const clearAllHistory = () => {
-                localStorage.removeItem('reha_quiz_storage');
-                setStats({});
-                setHistory([]);
-                setQuestions([]);
-                setCurrentIndex(0);
-                setShowClearConfirm(false);
-                const resetState = { settings, stats: {} };
-                localStorage.setItem('reha_quiz_storage', JSON.stringify(resetState));
-            };
+        function handleManualCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            const weakQuestions = useMemo(() => {
-                return QUIZ_DATA.filter(q => {
-                    const s = stats[q.id];
-                    if (!s) return false;
-                    const rate = s.corrects / s.attempts;
-                    return rate < 0.8 || (s.attempts > 0 && s.corrects < s.attempts);
-                });
-            }, [stats]);
-
-            const startQuiz = (mode, random) => {
-                let filtered = mode === 'weak' ? [...weakQuestions] : (mode === 'all' ? [...QUIZ_DATA] : QUIZ_DATA.filter(q => q.year === parseInt(mode)));
-                if (filtered.length === 0) return;
-                if (random) filtered = filtered.sort(() => Math.random() - 0.5);
-                else filtered = filtered.sort((a, b) => a.year !== b.year ? a.year - b.year : a.num - b.num);
-
-                setQuestions(filtered);
-                setCurrentIndex(0);
-                setHistory([]);
-                setSelectedYear(mode);
-                setIsRandom(random);
-                setView('quiz');
-                saveCurrentState({ questions: filtered, currentIndex: 0, history: [], selectedYear: mode, isRandom: random, view: 'quiz' });
-            };
-
-            const handleAnswer = (optionIdx) => {
-                const currentQ = questions[currentIndex];
-                const isCorrect = currentQ.answer === optionIdx;
-                const newHistory = [...history];
-                newHistory[currentIndex] = { id: currentQ.id, selected: optionIdx, isCorrect };
-                setHistory(newHistory);
-                const newStats = { ...stats };
-                if (!newStats[currentQ.id]) newStats[currentQ.id] = { attempts: 0, corrects: 0 };
-                newStats[currentQ.id].attempts += 1;
-                if (isCorrect) newStats[currentQ.id].corrects += 1;
-                setStats(newStats);
-                saveCurrentState({ history: newHistory, stats: newStats });
-            };
-
-            const goToNext = () => {
-                if (currentIndex < questions.length - 1) {
-                    const nextIdx = currentIndex + 1;
-                    setCurrentIndex(nextIdx);
-                    saveCurrentState({ currentIndex: nextIdx });
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const text = decodeText(arrayBuffer);
+                const success = processCSVData(text);
+                if (success) {
+                    document.getElementById('manual-load-box').classList.add('hidden');
                 } else {
-                    setView('result');
-                    saveCurrentState();
+                    showDialog("エラー", "CSVファイルの解析に失敗しました。正しい「25-34Exam.csv」ファイルを指定してください。", "閉じる", null, true);
                 }
             };
+            reader.readAsArrayBuffer(file);
+        }
 
-            const prevQuestion = () => {
-                if (currentIndex > 0) {
-                    const nextIdx = currentIndex - 1;
-                    setCurrentIndex(nextIdx);
-                    saveCurrentState({ currentIndex: nextIdx });
+        // RFC4180簡易CSVパースロジック (ダブルクォーテーションのセル、複数正解に対応)
+        function parseCSV(text) {
+            const lines = [];
+            let row = [""];
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const next = text[i+1];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (next === '"') {
+                            row[row.length - 1] += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        row[row.length - 1] += c;
+                    }
+                } else {
+                    if (c === '"') {
+                        inQuotes = true;
+                    } else if (c === ',') {
+                        row.push("");
+                    } else if (c === '\r' || c === '\n') {
+                        if (c === '\r' && next === '\n') {
+                            i++;
+                        }
+                        lines.push(row);
+                        row = [""];
+                    } else {
+                        row[row.length - 1] += c;
+                    }
                 }
+            }
+            if (row.length > 1 || row[0] !== "") {
+                lines.push(row);
+            }
+            return lines;
+        }
+
+        function processCSVData(csvText) {
+            // BOMの除去
+            if (csvText.startsWith('\uFEFF')) {
+                csvText = csvText.substring(1);
+            }
+
+            const parsed = parseCSV(csvText);
+            if (parsed.length <= 1) return false;
+
+            const headers = parsed[0].map(h => h.trim());
+            
+            // ヘッダーインデックス特定
+            const colIdx = {
+                year: headers.indexOf("回数"),
+                type: headers.indexOf("種別"),
+                subject: headers.indexOf("科目名"),
+                id: headers.indexOf("番号"),
+                question: headers.indexOf("問題文"),
+                opt1: headers.indexOf("選択肢１"),
+                opt2: headers.indexOf("選択肢２"),
+                opt3: headers.indexOf("選択肢３"),
+                opt4: headers.indexOf("選択肢４"),
+                ans: headers.indexOf("答")
             };
 
-            const BACKGROUND_COLORS = ['#f8fafc', '#ffffff', '#fff7ed', '#f0fdf4', '#0f172a', '#1e293b'];
-            const TEXT_COLORS = ['#1e293b', '#000000', '#431407', '#064e3b', '#f8fafc', '#ffffff', '#3b82f6', '#ef4444'];
-            const isDarkBg = settings.bgColor === '#0f172a' || settings.bgColor === '#1e293b';
-            const dynamicStyle = { backgroundColor: settings.bgColor, color: settings.textColor, fontSize: `${settings.fontSize}px` };
-            const surfaceStyle = { backgroundColor: isDarkBg ? 'rgba(255,255,255,0.05)' : '#ffffff', borderColor: isDarkBg ? 'rgba(255,255,255,0.1)' : '#f1f5f9' };
+            // 日本語ヘッダーが正常に一致しない場合のフォールバック(列順)
+            if (colIdx.year === -1) {
+                colIdx.year = 0; colIdx.type = 1; colIdx.subject = 2; colIdx.id = 3;
+                colIdx.question = 4; colIdx.opt1 = 5; colIdx.opt2 = 6; colIdx.opt3 = 7;
+                colIdx.opt4 = 8; colIdx.ans = 9;
+            }
 
-            return (
-                <div className="min-h-screen font-sans select-none touch-manipulation transition-colors duration-300" style={dynamicStyle}>
-                    {view === 'menu' && (
-                        <div className="flex flex-col items-center justify-center min-h-screen p-6 space-y-6 animate-in">
-                            <div className="text-center">
-                                <h1 className="text-3xl font-bold mb-2">リハビリテーション医学</h1>
-                                <p className="opacity-50 font-medium">国家試験 過去問自習ツール 完全版</p>
-                            </div>
-                            <div className="w-full max-w-md space-y-4">
-                                <div className="p-6 rounded-3xl shadow-lg border space-y-4" style={{...surfaceStyle, backgroundColor: isDarkBg ? 'rgba(255,165,0,0.1)' : '#fffaf0', borderColor: 'rgba(255,165,0,0.2)'}}>
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-sm font-bold text-orange-600 uppercase tracking-wider flex items-center gap-2"><Icon name="brain" size={18} /> 苦手克服モード</label>
-                                        <span className="bg-orange-200 text-orange-800 px-3 py-1 rounded-full text-xs font-bold">{weakQuestions.length} 問 該当</span>
-                                    </div>
-                                    <button onClick={() => startQuiz('weak', true)} disabled={weakQuestions.length === 0} className="w-full py-5 bg-orange-500 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-3"><Icon name="play" size={24} /> <span>苦手な問題を学習</span></button>
-                                </div>
-                                <div className="p-6 rounded-3xl shadow-xl border" style={surfaceStyle}>
-                                    <label className="block text-sm font-bold mb-3 opacity-40 uppercase tracking-wider">出題範囲</label>
-                                    <select className="w-full p-4 rounded-2xl border-2 mb-6 font-bold" style={{...surfaceStyle, color: settings.textColor}} value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
-                                        <option value="all">すべての過去問（全{QUIZ_DATA.length}問）</option>
-                                        {YEARS.map(y => <option key={y} value={y}>第{y}回 国家試験 ({QUIZ_DATA.filter(q => q.year === y).length}問)</option>)}
-                                    </select>
-                                    <div className="flex items-center space-x-3 mb-8 p-4 rounded-2xl border" style={surfaceStyle}>
-                                        <input type="checkbox" id="random" checked={isRandom} onChange={(e) => setIsRandom(e.target.checked)} className="w-6 h-6 rounded-lg accent-blue-600" />
-                                        <label htmlFor="random" className="font-bold cursor-pointer opacity-80">問題をシャッフルして出題</label>
-                                    </div>
-                                    <button onClick={() => startQuiz(selectedYear, isRandom)} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-lg active:scale-95 flex items-center justify-center space-x-3"><Icon name="play" size={24} /> <span>学習を開始</span></button>
-                                </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {localStorage.getItem('reha_quiz_storage') && JSON.parse(localStorage.getItem('reha_quiz_storage')).questions?.length > 0 && (
-                                        <button onClick={resumeSession} className="w-full py-4 bg-emerald-500/10 text-emerald-600 border-2 border-emerald-500/20 rounded-2xl font-bold flex items-center justify-center space-x-2 active:scale-95"><Icon name="rotate" size={20} /> <span>続きから再開</span></button>
-                                    )}
-                                    <button onClick={() => setView('settings')} className="w-full py-4 bg-slate-500/10 text-slate-500 border-2 border-slate-500/10 rounded-2xl font-bold flex items-center justify-center space-x-2"><Icon name="settings" size={20} /> <span>表示設定・データ管理</span></button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            const questions = [];
+            for (let i = 1; i < parsed.length; i++) {
+                const row = parsed[i];
+                // 空白行やヘッダー崩れの行は飛ばす
+                if (row.length < 10) continue;
 
-                    {view === 'quiz' && (
-                        <div className="flex flex-col min-h-screen p-4 max-w-2xl mx-auto overflow-hidden">
-                            <div className="flex items-center justify-between mb-6 pb-3 border-b-2" style={{borderColor: surfaceStyle.borderColor}}>
-                                <button onClick={() => setView('menu')} className="p-2 hover:bg-black/5 rounded-xl"><Icon name="home" size={24} /></button>
-                                <div className="text-center"><span className="text-xs font-black opacity-30 uppercase tracking-widest block">Question</span><span className="font-black text-xl">問{questions[currentIndex].num}</span></div>
-                                <div className="px-3 py-1 rounded-full text-xs font-mono font-bold" style={surfaceStyle}>{currentIndex + 1} / {questions.length}</div>
-                            </div>
-                            <div className="flex-1 overflow-y-auto px-1">
-                                <div className="mb-8 leading-relaxed font-bold" style={{ fontSize: `${settings.fontSize * 1.25}px` }}>{questions[currentIndex].question}<span className="inline-block ml-3 px-2 py-0.5 bg-black/10 rounded text-sm opacity-70 font-normal">第{questions[currentIndex].year}回</span></div>
-                                
-                                {history[currentIndex] && (
-                                    <div className={`p-4 mb-6 rounded-2xl border-2 font-black text-center animate-in ${history[currentIndex].isCorrect ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-rose-50 border-rose-500 text-rose-700'}`}>
-                                        <div className="flex items-center justify-center gap-2"><Icon name={history[currentIndex].isCorrect ? 'check' : 'x'} size={24} /><span>{history[currentIndex].isCorrect ? '正解です！' : `不正解です（正解は ${questions[currentIndex].answer + 1}）`}</span></div>
-                                    </div>
-                                )}
+                const q = {
+                    year: parseInt(row[colIdx.year]) || 0,
+                    type: (row[colIdx.type] || "").trim(),
+                    subject: (row[colIdx.subject] || "").trim(),
+                    id: parseInt(row[colIdx.id]) || 0,
+                    question: (row[colIdx.question] || "").trim(),
+                    options: [
+                        (row[colIdx.opt1] || "").trim(),
+                        (row[colIdx.opt2] || "").trim(),
+                        (row[colIdx.opt3] || "").trim(),
+                        (row[colIdx.opt4] || "").trim()
+                    ],
+                    answer: (row[colIdx.ans] || "").toString().trim()
+                };
 
-                                <div className="grid grid-cols-1 gap-4 mb-10">
-                                    {questions[currentIndex].options.map((opt, idx) => {
-                                        const currentHist = history[currentIndex];
-                                        const isAnswered = !!currentHist;
-                                        const isSelected = isAnswered && currentHist.selected === idx;
-                                        const isCorrect = idx === questions[currentIndex].answer;
-                                        let btnBaseStyle = { ...surfaceStyle };
-                                        let optionTextColor = settings.textColor;
-                                        if (isAnswered) {
-                                            if (isCorrect) { btnBaseStyle = { backgroundColor: 'rgba(34, 197, 94, 0.15)', borderColor: '#22c55e', borderWidth: '3px' }; optionTextColor = isDarkBg ? '#4ade80' : '#166534'; }
-                                            else if (isSelected) { btnBaseStyle = { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444', borderWidth: '3px' }; optionTextColor = isDarkBg ? '#f87171' : '#991b1b'; }
-                                            else { btnBaseStyle = { opacity: 0.2, backgroundColor: 'transparent', borderColor: 'transparent' }; }
-                                        }
-                                        return (
-                                            <button key={idx} onClick={() => !isAnswered && handleAnswer(idx)} className="w-full p-6 text-left rounded-3xl border-2 shadow-sm transition-all active:scale-[0.98] flex items-center justify-between" style={{...btnBaseStyle, color: optionTextColor}}><span className="font-bold"><span className="mr-4 opacity-30 font-mono">{idx + 1}</span>{opt}</span>{isAnswered && isCorrect && <Icon name="check" className="text-emerald-500" />}{isAnswered && isSelected && !isCorrect && <Icon name="x" className="text-rose-500" />}</button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div className="flex justify-between items-center mt-4 p-4 bg-white/5 backdrop-blur rounded-3xl border-t" style={{borderColor: surfaceStyle.borderColor}}>
-                                <button onClick={prevQuestion} disabled={currentIndex === 0} className="p-4 bg-black/5 rounded-2xl flex items-center space-x-2 disabled:opacity-20 font-bold"><Icon name="left" /> <span>戻る</span></button>
-                                <button onClick={goToNext} className={`px-8 py-4 rounded-2xl font-black shadow-lg flex items-center space-x-2 active:scale-95 transition-all ${history[currentIndex] ? 'bg-blue-600 text-white scale-105' : 'bg-slate-300 text-slate-500 opacity-50'}`}><span>{currentIndex === questions.length - 1 ? '結果表示' : '次の問題へ'}</span><Icon name="right" /></button>
-                            </div>
-                        </div>
-                    )}
+                // 最低限「問題文」と「答え」があるものだけ収集
+                if (q.question && q.answer) {
+                    questions.push(q);
+                }
+            }
 
-                    {view === 'result' && (
-                        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center space-y-10 animate-in">
-                            <h2 className="text-4xl font-black">学習終了</h2>
-                            <div className="relative">
-                                <svg className="w-64 h-64"><circle cx="128" cy="128" r="110" fill="none" stroke="currentColor" strokeOpacity="0.1" strokeWidth="16" /><circle cx="128" cy="128" r="110" fill="none" stroke="#3b82f6" strokeWidth="16" strokeDasharray="691" strokeDashoffset={691 - (691 * (history.filter(h => h && h.isCorrect).length / questions.length))} strokeLinecap="round" className="transition-all duration-1000" /></svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-6xl font-black text-blue-600">{Math.round((history.filter(h => h && h.isCorrect).length / questions.length) * 100)}%</span><span className="text-slate-400 font-bold">{history.filter(h => h && h.isCorrect).length} / {questions.length} 正解</span></div>
-                            </div>
-                            <div className="w-full max-w-sm grid grid-cols-2 gap-4">
-                                <button onClick={() => startQuiz(selectedYear, isRandom)} className="py-4 bg-black/5 rounded-2xl font-bold active:scale-95">もう一度解く</button>
-                                <button onClick={() => setView('menu')} className="py-4 bg-blue-600 text-white rounded-2xl font-bold active:scale-95">メニューへ</button>
-                            </div>
-                        </div>
-                    )}
+            if (questions.length > 0) {
+                rawQuestions = questions;
+                // ローカルにキャッシュ
+                localStorage.setItem('cached_csv_data', csvText);
+                updateStatusMessage(`🟢 準備完了: 全 ${questions.length} 問ロード済`);
+                
+                // 画面要素の更新
+                buildSelectors();
+                updateIncorrectCountDisplay();
+                document.getElementById('menu-screen').classList.remove('hidden');
+                return true;
+            }
+            return false;
+        }
 
-                    {view === 'settings' && (
-                        <div className="min-h-screen p-6 max-w-md mx-auto space-y-8 pb-10">
-                            <div className="flex items-center space-x-4"><button onClick={() => { setView('menu'); setShowClearConfirm(false); }} className="p-3 bg-black/5 rounded-2xl"><Icon name="left" size={28}/></button><h2 className="text-2xl font-black">設定・データ管理</h2></div>
-                            <div className="space-y-6">
-                                <div className="p-6 rounded-3xl shadow-sm border space-y-4" style={surfaceStyle}><label className="block font-black opacity-40 text-xs uppercase tracking-widest">背景色</label>
-                                    <div className="grid grid-cols-6 gap-2">{BACKGROUND_COLORS.map(color => (<button key={color} onClick={() => setSettings({...settings, bgColor: color})} className={`h-10 rounded-xl border-4 transition-all ${settings.bgColor === color ? 'border-blue-500 scale-110' : 'border-black/5'}`} style={{backgroundColor: color}} />))}</div>
-                                </div>
-                                <div className="p-6 rounded-3xl shadow-sm border space-y-4" style={surfaceStyle}><label className="block font-black opacity-40 text-xs uppercase tracking-widest">文字色</label>
-                                    <div className="grid grid-cols-8 gap-2">{TEXT_COLORS.map(color => (<button key={color} onClick={() => setSettings({...settings, textColor: color})} className={`h-10 rounded-xl border-4 transition-all ${settings.textColor === color ? 'border-blue-500 scale-110' : 'border-black/5'}`} style={{backgroundColor: color}} />))}</div>
-                                </div>
-                                <div className="p-6 rounded-3xl shadow-sm border space-y-4" style={surfaceStyle}><label className="block font-black opacity-40 text-xs uppercase tracking-widest">文字サイズ ({settings.fontSize}px)</label><input type="range" min="14" max="32" value={settings.fontSize} onChange={(e) => setSettings({...settings, fontSize: parseInt(e.target.value)})} className="w-full h-3 accent-blue-600" />
-                                    <div className="p-4 rounded-xl border-2 border-dashed text-center font-bold" style={{fontSize: `${settings.fontSize}px`, color: settings.textColor, backgroundColor: settings.bgColor}}>テキストプレビュー</div>
-                                </div>
-                                <div className="p-6 rounded-3xl shadow-sm border space-y-4" style={surfaceStyle}><label className="block font-black opacity-40 text-xs uppercase tracking-widest">データの管理</label>
-                                    {!showClearConfirm ? (<button onClick={() => setShowClearConfirm(true)} className="w-full py-4 bg-rose-500/10 text-rose-500 border-2 border-rose-500/10 rounded-2xl font-bold flex items-center justify-center space-x-2"><Icon name="trash" size={20} /><span>履歴と統計をクリア</span></button>) : (
-                                        <div className="bg-rose-500/10 p-4 rounded-2xl border-2 border-rose-500/20 space-y-4"><div className="flex items-start space-x-3 text-rose-500"><Icon name="alert" className="mt-1" /><p className="text-sm font-bold">全ての正解率・履歴が消去されます。よろしいですか？</p></div><div className="flex gap-2"><button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 bg-white/10 text-inherit rounded-xl font-bold border border-black/10">やめる</button><button onClick={clearAllHistory} className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold">消去を実行</button></div></div>
-                                    )}
-                                </div>
-                                <button onClick={() => { saveCurrentState(); setView('menu'); }} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-lg flex items-center justify-center space-x-2"><Icon name="save" size={24} /><span>設定を保存して戻る</span></button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+        function updateStatusMessage(msg) {
+            const el = document.getElementById('data-status-message');
+            if (el) el.innerHTML = msg;
+        }
+
+        // ==========================================
+        // フィルターセレクター（セレクトボックス）の構築
+        // ==========================================
+        function buildSelectors() {
+            const subjects = new Set();
+            const years = new Set();
+
+            rawQuestions.forEach(q => {
+                if (q.subject) subjects.add(q.subject);
+                if (q.year) years.add(q.year);
+            });
+
+            // ソート
+            const sortedSubjects = Array.from(subjects).sort();
+            const sortedYears = Array.from(years).sort((a, b) => a - b);
+
+            // 1. 科目別演習 - 科目セレクト
+            const subSelect = document.getElementById('subject-select');
+            subSelect.innerHTML = `<option value="">-- 科目を選択してください --</option>`;
+            sortedSubjects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                subSelect.appendChild(opt);
+            });
+
+            // 2. 科目別演習 - 回数セレクト
+            const subYearSelect = document.getElementById('subject-year-select');
+            subYearSelect.innerHTML = `<option value="all">過去10回分すべてを対象（選択なし）</option>`;
+            sortedYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = `第 ${y} 回 国家試験`;
+                subYearSelect.appendChild(opt);
+            });
+
+            // 3. 模擬試験 - 回数セレクト
+            const mockYearSelect = document.getElementById('mock-year-select');
+            mockYearSelect.innerHTML = `<option value="">-- 国家試験回数を選択してください --</option>`;
+            sortedYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = `第 ${y} 回 国家試験 (1〜160番)`;
+                mockYearSelect.appendChild(opt);
+            });
+        }
+
+        // ==========================================
+        // ❌ 弱点問題（間違えた問題）の管理機能
+        // ==========================================
+        function getIncorrectQuestions() {
+            const saved = localStorage.getItem('incorrect_questions_store');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        function saveIncorrectQuestions(questions) {
+            localStorage.setItem('incorrect_questions_store', JSON.stringify(questions));
+            updateIncorrectCountDisplay();
+        }
+
+        // 間違えた問題をリストに保存 (重複防止)
+        function addIncorrectQuestion(q) {
+            const list = getIncorrectQuestions();
+            const exists = list.some(item => item.year === q.year && item.id === q.id);
+            if (!exists) {
+                list.push(q);
+                saveIncorrectQuestions(list);
+            }
+        }
+
+        // 克服（正解）した問題をリストから削除
+        function removeIncorrectQuestion(q) {
+            let list = getIncorrectQuestions();
+            list = list.filter(item => !(item.year === q.year && item.id === q.id));
+            saveIncorrectQuestions(list);
+        }
+
+        // 弱点問題数をUIに反映
+        function updateIncorrectCountDisplay() {
+            const list = getIncorrectQuestions();
+            const count = list.length;
+            const displayEl = document.getElementById('incorrect-count-display');
+            const startBtn = document.getElementById('start-incorrect-btn');
+
+            if (displayEl) {
+                displayEl.textContent = count;
+            }
+
+            if (startBtn) {
+                if (count > 0) {
+                    startBtn.disabled = false;
+                } else {
+                    startBtn.disabled = true;
+                }
+            }
+        }
+
+        // ==========================================
+        // 演習セッション開始ロジック
+        // ==========================================
+
+        // A. 科目別演習開始
+        function startSubjectSession() {
+            const subject = document.getElementById('subject-select').value;
+            const yearStr = document.getElementById('subject-year-select').value;
+
+            if (!subject) {
+                showDialog("確認", "演習する科目を選択してください。", "OK", null, true);
+                return;
+            }
+
+            // フィルタ
+            let filtered = rawQuestions.filter(q => q.subject === subject);
+            if (yearStr !== 'all') {
+                const yearNum = parseInt(yearStr);
+                filtered = filtered.filter(q => q.year === yearNum);
+            }
+
+            if (filtered.length === 0) {
+                showDialog("該当問題なし", "指定された条件に一致する過去問が見つかりませんでした。", "戻る", null, true);
+                return;
+            }
+
+            // 出題順調整: 「総合(基礎)」「総合(専門)」など、科目名に "総合" がつくものは順番通り、それ以外はシャッフル。
+            const isGeneral = subject.includes("総合");
+            if (isGeneral) {
+                // 回数、問題番号の昇順ソート
+                filtered.sort((a, b) => (a.year - b.year) || (a.id - b.id));
+            } else {
+                // シャッフル
+                shuffleArray(filtered);
+            }
+
+            const badgeText = "科目別";
+            const infoText = `${subject} (${yearStr === 'all' ? '過去10回分' : '第'+yearStr+'回'})`;
+
+            setupAndStartQuiz(filtered, 'subject', badgeText, infoText, subject, yearStr);
+        }
+
+        // B. 模擬試験開始
+        function startMockSession() {
+            const yearStr = document.getElementById('mock-year-select').value;
+            if (!yearStr) {
+                showDialog("確認", "試験回数を選択してください。", "OK", null, true);
+                return;
+            }
+
+            const yearNum = parseInt(yearStr);
+            let filtered = rawQuestions.filter(q => q.year === yearNum);
+
+            if (filtered.length === 0) {
+                showDialog("該当問題なし", "指定された回の問題が見つかりません。", "戻る", null, true);
+                return;
+            }
+
+            // 模擬試験は1〜160番まで通してオリジナル（番号順）で練習
+            filtered.sort((a, b) => a.id - b.id);
+
+            const badgeText = "模擬試験";
+            const infoText = `第 ${yearNum} 回 国家試験`;
+
+            setupAndStartQuiz(filtered, 'mock', badgeText, infoText, null, yearStr);
+        }
+
+        // C. 弱点克服演習開始 (新規)
+        function startIncorrectSession() {
+            const incorrectList = getIncorrectQuestions();
+            if (incorrectList.length === 0) {
+                showDialog("案内", "現在、間違えた問題（弱点ストック）はありません。", "閉じる", null, true);
+                return;
+            }
+
+            // 出題順をシャッフル
+            const questions = [...incorrectList];
+            shuffleArray(questions);
+
+            const badgeText = "弱点克服";
+            const infoText = `間違えた問題の再挑戦`;
+
+            setupAndStartQuiz(questions, 'incorrect', badgeText, infoText, null, null);
+        }
+
+        // セッション初期設定とQuiz画面遷移
+        function setupAndStartQuiz(questions, mode, badge, info, selectedSub, selectedYr) {
+            currentSession = {
+                mode: mode,
+                selectedSubject: selectedSub,
+                selectedYear: selectedYr,
+                questions: questions,
+                currentIndex: 0,
+                userAnswers: {}, // key: index, value: { choice, isCorrect }
+                badge: badge,
+                info: info
+            };
+
+            // セーブデータを保存
+            saveProgressToLocalStorage();
+            launchQuizScreen();
+        }
+
+        function launchQuizScreen() {
+            // UI切替
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            // 画面反映
+            renderCurrentQuestion();
+        }
+
+        // ==========================================
+        // 演習画面 描画＆ロジック
+        // ==========================================
+        function renderCurrentQuestion() {
+            if (!currentSession) return;
+
+            const q = currentSession.questions[currentSession.currentIndex];
+            
+            // 各テキスト反映
+            document.getElementById('quiz-badge').textContent = currentSession.badge;
+            document.getElementById('quiz-info').textContent = currentSession.info;
+            document.getElementById('quiz-progress').textContent = `${currentSession.currentIndex + 1} / ${currentSession.questions.length}`;
+            document.getElementById('quiz-num-display').textContent = `第 ${q.year} 回 - 番号 ${q.id} [${q.subject}]`;
+            
+            // 問題文
+            document.getElementById('quiz-question-text').textContent = q.question;
+
+            // 選択肢ボタンの有効化と初期化 (文字サイズがbodyに連動するように調整済み)
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`opt-btn-${i}`);
+                const txt = document.getElementById(`opt-text-${i}`);
+                
+                txt.textContent = q.options[i - 1] || `選択肢 ${i}`;
+                
+                // クラス初期化 (フォントサイズは全体の文字の大きさ設定に連動)
+                btn.className = "btn-custom text-left block w-full";
+                btn.disabled = false;
+            }
+
+            // 判定エリア隠す
+            document.getElementById('feedback-area').classList.add('hidden');
+        }
+
+        // 解答決定
+        function submitAnswer(choice) {
+            if (!currentSession) return;
+            const q = currentSession.questions[currentSession.currentIndex];
+
+            // 複数正解の考慮：カンマ区切り（"1,2,3,4"など）や通常の一致を判定
+            const correctAnswers = q.answer.split(',').map(a => a.trim());
+            const isCorrect = correctAnswers.includes(choice);
+
+            // セッションに記録
+            currentSession.userAnswers[currentSession.currentIndex] = {
+                choice: choice,
+                isCorrect: isCorrect
+            };
+
+            // 間違えたら弱点問題に自動登録
+            if (!isCorrect) {
+                addIncorrectQuestion(q);
+            } else {
+                // 弱点克服モード中に正解した場合は、弱点問題リストから削除
+                if (currentSession.mode === 'incorrect') {
+                    removeIncorrectQuestion(q);
+                }
+            }
+
+            // 進捗をローカル保存 (途中終了用)
+            saveProgressToLocalStorage();
+
+            // 選択肢ボタンを非活性化＆正解不正解を着色
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`opt-btn-${i}`);
+                btn.disabled = true;
+
+                const iStr = i.toString();
+                // ユーザーが選択したものが正解だった
+                if (iStr === choice) {
+                    if (isCorrect) {
+                        btn.classList.add('bg-green-700', 'text-white', 'border-green-900');
+                    } else {
+                        btn.classList.add('bg-red-700', 'text-white', 'border-red-900');
+                    }
+                }
+                // もし正解を明示する場合 (ユーザーが間違えた時に正解のボタンをハイライト)
+                if (correctAnswers.includes(iStr) && !isCorrect) {
+                    btn.classList.add('bg-green-700', 'text-white', 'border-green-900');
+                }
+            }
+
+            // フィードバック表示
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackResult = document.getElementById('feedback-result');
+            const feedbackDetail = document.getElementById('feedback-detail');
+            const nextBtn = document.getElementById('next-question-btn');
+
+            feedbackArea.classList.remove('hidden');
+
+            // フィードバック色変更（視覚障害者用ハレーション防止色）
+            feedbackArea.style.borderColor = isCorrect ? 'var(--correct-color)' : 'var(--incorrect-color)';
+
+            if (isCorrect) {
+                feedbackResult.textContent = "⭕ 正解！";
+                feedbackResult.style.color = 'var(--correct-color)';
+                feedbackDetail.textContent = `正解は ${q.answer} です。よくできました！`;
+            } else {
+                feedbackResult.textContent = "❌ 不正解";
+                feedbackResult.style.color = 'var(--incorrect-color)';
+                feedbackDetail.textContent = `正解は ${q.answer} です。もう一度復習しましょう。`;
+            }
+
+            // 次へボタンの文字切替
+            if (currentSession.currentIndex === currentSession.questions.length - 1) {
+                nextBtn.textContent = "🏆 結果を表示する";
+            } else {
+                nextBtn.textContent = "次へ進む ▶️";
+            }
+
+            // 次へ進むボタンにフォーカスをあてて操作性向上
+            nextBtn.focus();
+        }
+
+        // 次の問題へ
+        function nextQuestion() {
+            if (!currentSession) return;
+
+            if (currentSession.currentIndex < currentSession.questions.length - 1) {
+                currentSession.currentIndex++;
+                renderCurrentQuestion();
+            } else {
+                // 演習終了
+                finishSession();
+            }
+        }
+
+        // 演習終了と成績記録
+        function finishSession() {
+            if (!currentSession) return;
+
+            const total = currentSession.questions.length;
+            let correct = 0;
+            for (let i = 0; i < total; i++) {
+                if (currentSession.userAnswers[i]?.isCorrect) {
+                    correct++;
+                }
+            }
+
+            const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            // 画面反映
+            document.getElementById('result-score-display').textContent = `${correct} / ${total} 問 正解`;
+            document.getElementById('result-percent-display').textContent = `正解率: ${percent}%`;
+
+            // 成績履歴に追加
+            saveScoreHistory({
+                timestamp: Date.now(),
+                modeText: currentSession.info,
+                total: total,
+                answered: total,
+                correct: correct
+            });
+
+            // 進行中データを削除
+            localStorage.removeItem('saved_session');
+            document.getElementById('resume-container').classList.add('hidden');
+
+            // 画面切替
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+
+        // 途中で保存して戻る
+        function stopAndSaveQuiz() {
+            showDialog(
+                "確認", 
+                "現在の学習状況を保存してメニューに戻りますか？続きからいつでも再開できます。", 
+                "保存して戻る", 
+                () => {
+                    saveProgressToLocalStorage();
+                    checkSavedSession();
+                    backToMenu();
+                }
             );
         }
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+
+        function backToMenu() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+            renderHistoryAndGraph();
+            updateIncorrectCountDisplay();
+        }
+
+        // ==========================================
+        // レジューム（続きから再開）処理
+        // ==========================================
+        function checkSavedSession() {
+            const saved = localStorage.getItem('saved_session');
+            const container = document.getElementById('resume-container');
+            if (saved) {
+                try {
+                    const sessionObj = JSON.parse(saved);
+                    // 以前と問題データ数が一致しているか
+                    if (sessionObj && sessionObj.questions && sessionObj.questions.length > 0) {
+                        container.classList.remove('hidden');
+                        return;
+                    }
+                } catch(e) {}
+            }
+            container.classList.add('hidden');
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem('saved_session');
+            if (!saved) return;
+
+            try {
+                currentSession = JSON.parse(saved);
+                launchQuizScreen();
+                showNotification("前回の途中から再開しました。");
+            } catch(e) {
+                showDialog("エラー", "セッションの復元に失敗しました。", "OK", null, true);
+            }
+        }
+
+        function saveProgressToLocalStorage() {
+            if (currentSession) {
+                localStorage.setItem('saved_session', JSON.stringify(currentSession));
+            }
+        }
+
+        // ==========================================
+        // 履歴・成績データの保存とSVGグラフのレンダリング
+        // ==========================================
+        function saveScoreHistory(record) {
+            let history = [];
+            const saved = localStorage.getItem('score_history');
+            if (saved) {
+                try {
+                    history = JSON.parse(saved);
+                } catch(e) {}
+            }
+            history.push(record);
+            localStorage.setItem('score_history', JSON.stringify(history));
+        }
+
+        function renderHistoryAndGraph() {
+            let history = [];
+            const saved = localStorage.getItem('score_history');
+            if (saved) {
+                try {
+                    history = JSON.parse(saved);
+                } catch(e) {}
+            }
+
+            // 履歴テーブルの更新
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">学習履歴がまだありません。</td></tr>`;
+            } else {
+                // 新しい順に最大10件表示
+                const displayHistory = [...history].reverse().slice(0, 10);
+                displayHistory.forEach(item => {
+                    const dateStr = new Date(item.timestamp).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                    const percent = item.answered > 0 ? Math.round((item.correct / item.answered) * 100) : 0;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-300";
+                    tr.innerHTML = `
+                        <td class="p-2 text-sm">${dateStr}</td>
+                        <td class="p-2 font-bold">${item.modeText}</td>
+                        <td class="p-2">${item.correct}/${item.total}</td>
+                        <td class="p-2 font-bold ${percent >= 60 ? 'text-green-600' : 'text-red-500'}">${percent}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // SVGグラフ生成
+            const graphContainer = document.getElementById('graph-container');
+            graphContainer.innerHTML = generateTrendGraph(history);
+        }
+
+        // ロービジョンの方にも見やすい超太線SVGグラフ生成
+        function generateTrendGraph(history) {
+            if (!history || history.length === 0) {
+                return `<div class="p-6 text-center text-gray-500 font-bold border-2 border-dashed border-gray-400 rounded-lg">履歴がたまると、ここに折れ線グラフが表示されます。</div>`;
+            }
+
+            // 直近20回分を抽出
+            const data = history.slice(-20);
+            const width = 800;
+            const height = 300;
+            const paddingLeft = 70;
+            const paddingRight = 40;
+            const paddingTop = 40;
+            const paddingBottom = 50;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            let points = [];
+            let gridLines = '';
+            let yLabels = '';
+            let xLabels = '';
+
+            // Y軸補助線 (0%, 25%, 50%, 75%, 100%)
+            for (let i = 0; i <= 4; i++) {
+                const pct = i * 25;
+                const y = paddingTop + chartHeight - (pct / 100) * chartHeight;
+                // 太めの破線
+                gridLines += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="var(--button-border)" stroke-dasharray="6,6" stroke-width="2" />`;
+                yLabels += `<text x="${paddingLeft - 15}" y="${y + 8}" font-size="18" font-weight="bold" fill="var(--text-color)" text-anchor="end">${pct}%</text>`;
+            }
+
+            // X軸プロット計算
+            const stepX = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth;
+
+            data.forEach((item, index) => {
+                const pct = item.answered > 0 ? (item.correct / item.answered) * 100 : 0;
+                const x = paddingLeft + index * stepX;
+                const y = paddingTop + chartHeight - (pct / 100) * chartHeight;
+                points.push({ x, y, pct, item });
+            });
+
+            let pathD = '';
+            let circles = '';
+
+            if (points.length > 0) {
+                pathD = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    pathD += ` L ${points[i].x} ${points[i].y}`;
+                }
+
+                points.forEach((p, idx) => {
+                    // 太いドット
+                    circles += `
+                        <circle cx="${p.x}" cy="${p.y}" r="12" fill="var(--accent-color)" stroke="var(--bg-color)" stroke-width="4" />
+                        <text x="${p.x}" y="${p.y - 18}" font-size="16" font-weight="black" fill="var(--text-color)" text-anchor="middle">${Math.round(p.pct)}%</text>
+                    `;
+
+                    // X軸ラベル (最初、中間、最後などポイントを絞る)
+                    if (idx === 0 || idx === points.length - 1 || (points.length > 2 && idx === Math.floor(points.length / 2))) {
+                        const date = new Date(p.item.timestamp);
+                        const labelText = `${date.getMonth() + 1}/${date.getDate()}`;
+                        xLabels += `<text x="${p.x}" y="${height - 15}" font-size="16" font-weight="bold" fill="var(--text-color)" text-anchor="middle">${labelText}</text>`;
+                    }
+                });
+            }
+
+            // 非常に太い線 (stroke-width="6") で視認性を確保
+            return `
+                <svg viewBox="0 0 ${width} ${height}" class="w-full max-w-full h-auto" style="background: var(--card-bg); border-radius: 12px; border: 3px solid var(--button-border); box-shadow: inset 0 0 10px rgba(0,0,0,0.05);" role="img" aria-label="成績推移グラフ">
+                    ${gridLines}
+                    ${yLabels}
+                    ${xLabels}
+                    ${points.length > 1 ? `<path d="${pathD}" fill="none" stroke="var(--accent-color)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+                    ${circles}
+                </svg>
+            `;
+        }
+
+        // 全リセット確認
+        function confirmAllReset() {
+            showDialog(
+                "⚠️ 完全初期化の警告", 
+                "これまでの成績履歴、間違えた問題（弱点ストック）、現在保存されている演習進行データが完全に削除されます。よろしいですか？", 
+                "すべてリセットする", 
+                () => {
+                    localStorage.removeItem('score_history');
+                    localStorage.removeItem('saved_session');
+                    localStorage.removeItem('incorrect_questions_store');
+                    currentSession = null;
+                    checkSavedSession();
+                    renderHistoryAndGraph();
+                    updateIncorrectCountDisplay();
+                    showNotification("学習データを完全に初期化しました。");
+                }
+            );
+        }
+
+        // ==========================================
+        // ヘルパー・便利ユーティリティ
+        // ==========================================
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showNotification(msg) {
+            const bar = document.getElementById('notification-bar');
+            bar.textContent = msg;
+            bar.classList.remove('hidden');
+            setTimeout(() => {
+                bar.classList.add('hidden');
+            }, 4000);
+        }
+
+        // アクセシブルなカスタムダイアログ（alert/confirm的動作の代替）
+        function showDialog(title, message, confirmText, onConfirm, isAlertOnly = false) {
+            const overlay = document.getElementById('dialog-overlay');
+            const titleEl = document.getElementById('dialog-title');
+            const msgEl = document.getElementById('dialog-message');
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            confirmBtn.textContent = confirmText;
+
+            overlay.classList.remove('hidden');
+
+            if (isAlertOnly) {
+                cancelBtn.classList.add('hidden');
+            } else {
+                cancelBtn.classList.remove('hidden');
+            }
+
+            // ハンドラ登録
+            confirmBtn.onclick = function() {
+                overlay.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+
+            cancelBtn.onclick = function() {
+                overlay.classList.add('hidden');
+            };
+            
+            // フォーカスをあてる
+            confirmBtn.focus();
+        }
     </script>
 </body>
 </html>
