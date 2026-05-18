@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国家試験 過去問演習ツール (アクセシブル版)</title>
+    <!-- Tailwind CSS (スタイリングに使用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* カスタムのCSS変数を用いたアクセシブルテーマ */
+        :root {
+            /* 標準テーマ: ソフトライト (オフホワイト) */
+            --bg-color: #fbfaf5;
+            --text-color: #2d2d2d;
+            --button-bg: #ece7df;
+            --button-text: #2d2d2d;
+            --button-border: #d1c9bd;
+            --accent-color: #4a6fa5;
+            --accent-text: #ffffff;
+            --correct-color: #2d8a4e;
+            --incorrect-color: #c84b4b;
+            --card-bg: #f5f0e6;
+        }
+
+        /* 弱視向けテーマ1: ソフトダーク (ハレーションを抑えた暗色) */
+        body.theme-dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffdd;
+            --button-bg: #333333;
+            --button-text: #ffffdd;
+            --button-border: #555555;
+            --accent-color: #64b5f6;
+            --accent-text: #1a1a1a;
+            --correct-color: #81c784;
+            --incorrect-color: #e57373;
+            --card-bg: #262626;
+        }
+
+        /* 弱視向けテーマ2: マイルドイエロー */
+        body.theme-yellow {
+            --bg-color: #ffffcc;
+            --text-color: #111111;
+            --button-bg: #e6e6b3;
+            --button-text: #111111;
+            --button-border: #999966;
+            --accent-color: #0044cc;
+            --accent-text: #ffffcc;
+            --correct-color: #007700;
+            --incorrect-color: #cc0000;
+            --card-bg: #ffffe0;
+        }
+
+        /* 弱視向けテーマ3: マイルドブルー */
+        body.theme-blue {
+            --bg-color: #eef5fc;
+            --text-color: #112233;
+            --button-bg: #ccddee;
+            --button-text: #112233;
+            --button-border: #aabbcc;
+            --accent-color: #0055aa;
+            --accent-text: #eef5fc;
+            --correct-color: #118833;
+            --incorrect-color: #cc2222;
+            --card-bg: #e1edf8;
+        }
+
+        /* 弱視向けテーマ4: 高コントラスト黒白 */
+        body.theme-blackwhite {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --button-bg: #1a1a1a;
+            --button-text: #ffffff;
+            --button-border: #888888;
+            --accent-color: #3b82f6;
+            --accent-text: #ffffff;
+            --correct-color: #4ade80;
+            --incorrect-color: #f87171;
+            --card-bg: #0d0d0d;
+        }
+
+        /* フォントサイズ設定 (CSS変数制御) */
+        body.size-small {
+            --font-base: 18px;
+            --font-title: 22px;
+            --font-question: 24px;
+        }
+        body.size-medium {
+            --font-base: 24px;
+            --font-title: 28px;
+            --font-question: 30px;
+        }
+        body.size-large {
+            --font-base: 32px;
+            --font-title: 36px;
+            --font-question: 38px;
+        }
+        body.size-xlarge {
+            --font-base: 40px;
+            --font-title: 44px;
+            --font-question: 46px;
+        }
+
+        /* 基本スタイル適用 */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: var(--font-base);
+            transition: background-color 0.2s, color 0.2s;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3 {
+            font-size: var(--font-title);
+            font-weight: bold;
+        }
+
+        .text-question {
+            font-size: var(--font-question);
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        /* 視覚障害者向けにフォーカス表示を非常に目立たせる */
+        button:focus, select:focus, input:focus {
+            outline: 5px solid var(--accent-color) !important;
+            outline-offset: 2px;
+        }
+
+        /* タッチターゲットを大きくし、ボタン同士の間隔を確保 */
+        .btn-custom {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: 3px solid var(--button-border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 4.5rem; /* 指で押しやすいサイズ */
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .btn-custom:hover, .btn-custom:active {
+            opacity: 0.9;
+            border-color: var(--accent-color);
+            transform: scale(0.99);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color) !important;
+            color: var(--accent-text) !important;
+            border-color: var(--accent-color) !important;
+        }
+
+        /* ボタン無効時の視覚的配慮 (コントラストを維持しつつ半透明に) */
+        .btn-custom:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--button-border) !important;
+        }
+
+        /* カードのスタイリング */
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--button-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 視覚的なセパレーター */
+        .separator {
+            border-top: 3px solid var(--button-border);
+            margin: 1.5rem 0;
+        }
+
+        /* 非表示クラス */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="size-medium">
+
+    <!-- 全体コンテナ -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+
+        <!-- ========================================== -->
+        <!-- 1. アクセシビリティ設定パネル (常設)        -->
+        <!-- ========================================== -->
+        <header class="card mb-6" aria-label="アクセシビリティ設定">
+            <h1 class="text-center mb-4">🩺 国家試験 過去問演習ツール</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 配色テーマ -->
+                <div>
+                    <label for="theme-selector" class="block font-bold mb-1">■ 背景と文字の色 (ハレーション防止配色)</label>
+                    <select id="theme-selector" onchange="changeTheme(this.value)" class="w-full btn-custom p-3 text-left">
+                        <option value="default">標準（ソフトクリーム / 濃グレー）</option>
+                        <option value="dark">弱視用１（ソフト黒 / ソフト黄）</option>
+                        <option value="yellow">弱視用２（マイルド黄 / 濃グレー）</option>
+                        <option value="blue">弱視用３（マイルド青 / 濃紺）</option>
+                        <option value="blackwhite">弱視用４（真っ黒背景 / 真っ白文字）</option>
+                    </select>
+                </div>
+
+                <!-- 文字サイズ -->
+                <div>
+                    <label for="size-selector" class="block font-bold mb-1">■ 文字の大きさ</label>
+                    <select id="size-selector" onchange="changeFontSize(this.value)" class="w-full btn-custom p-3 text-left">
+                        <option value="small">文字：小 (18px)</option>
+                        <option value="medium" selected>文字：中 (24px)</option>
+                        <option value="large">文字：大 (32px)</option>
+                        <option value="xlarge">文字：極大 (40px)</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- 通知エリア -->
+        <div id="notification-bar" class="hidden p-4 mb-4 text-center rounded-xl font-bold bg-yellow-100 text-yellow-900 border border-yellow-300" role="alert"></div>
+
+        <!-- ========================================== -->
+        <!-- 2. CSVロードエリア                          -->
+        <!-- ========================================== -->
+        <section id="csv-loader-section" class="card">
+            <h2 class="mb-2">📁 問題データの読み込み状況</h2>
+            <div id="data-status-message" class="font-bold text-red-500 mb-3">
+                データをロードしています。お待ちください...
+            </div>
+            
+            <div id="manual-load-box" class="hidden p-4 border-2 border-dashed border-gray-400 rounded-lg">
+                <p class="mb-3 font-bold">⚠️ 自動ロードに失敗したか、ローカル環境(file://)で実行しています。</p>
+                <p class="mb-3 text-sm">フォルダ内にある「25-34Exam.csv」ファイルを以下のボタンから選択してください。</p>
+                <input type="file" id="csv-file-input" accept=".csv" onchange="handleManualCSVUpload(event)" class="block w-full text-lg p-2 border-2 border-gray-300 rounded-lg">
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. メインメニュー（モード選択）             -->
+        <!-- ========================================== -->
+        <main id="menu-screen" class="hidden">
+            
+            <!-- レジューム（続きから再開）ボタン -->
+            <div id="resume-container" class="hidden card bg-green-100 border-green-500 text-green-900">
+                <h2 class="text-green-800 mb-2">🔄 前回の演習が途中で保存されています</h2>
+                <p class="mb-4">前回の続き（残り問題）から開始できます。</p>
+                <button onclick="resumeSession()" class="w-full btn-custom btn-accent text-2xl">
+                    ▶️ 前回の続きから再開する
+                </button>
+            </div>
+
+            <!-- A. 科目別演習 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📖 A. 科目別演習</h2>
+                <p class="mb-4 text-sm">科目と試験回数を選んで練習します。回数を指定しない場合は過去10回分の全問題から出題されます。「総合(基礎)」「総合(専門)」以外の科目はランダムに出題されます。</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="subject-select" class="block font-bold mb-1">1. 科目を選択する</label>
+                        <select id="subject-select" class="w-full btn-custom p-3 text-left">
+                            <option value="">-- 科目を選択してください --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="subject-year-select" class="block font-bold mb-1">2. 試験回数を選択する (任意)</label>
+                        <select id="subject-year-select" class="w-full btn-custom p-3 text-left">
+                            <option value="all">過去10回分すべてを対象（選択なし）</option>
+                        </select>
+                    </div>
+
+                    <button onclick="startSubjectSession()" class="w-full btn-custom btn-accent mt-4 text-xl">
+                        🔥 この設定で科目別演習を開始する
+                    </button>
+                </div>
+            </section>
+
+            <!-- B. 模擬試験 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📝 B. 模擬試験</h2>
+                <p class="mb-4 text-sm">国家試験の回数を1つ選択し、1番から160番まで順番通りに実力試しを行います。</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="mock-year-select" class="block font-bold mb-1">試験回数を選択する</label>
+                        <select id="mock-year-select" class="w-full btn-custom p-3 text-left">
+                            <option value="">-- 国家試験回数を選択してください --</option>
+                        </select>
+                    </div>
+
+                    <button onclick="startMockSession()" class="w-full btn-custom btn-accent mt-4 text-xl">
+                        ✏️ 模擬試験を開始する (1〜160番)
+                    </button>
+                </div>
+            </section>
+
+            <!-- C. 弱点克服演習（新規追加） -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">❌ C. 弱点克服演習（間違えた問題）</h2>
+                <p class="mb-4 text-sm">演習や模擬試験で間違えた問題が自動で記録されます。このモードで正解するとリストから自動で消去され、苦手問題の完全克服を目指せます。</p>
+                
+                <div class="space-y-4">
+                    <div class="p-4 bg-black bg-opacity-10 rounded-xl text-center">
+                        現在の弱点問題ストック: 
+                        <span id="incorrect-count-display" class="text-3xl font-black text-red-500 mx-2">0</span> 問
+                    </div>
+
+                    <button id="start-incorrect-btn" onclick="startIncorrectSession()" class="w-full btn-custom btn-accent text-xl" disabled>
+                        🔄 弱点克服演習を開始する (ランダム出題)
+                    </button>
+                </div>
+            </section>
+
+            <!-- 成績履歴・変化 -->
+            <section class="card">
+                <h2 class="border-b-4 border-gray-400 pb-2 mb-4">📈 成績履歴と学習変化</h2>
+                
+                <!-- SVG グラフコンテナ -->
+                <div class="mb-6">
+                    <p class="font-bold mb-2">■ 最近の正解率の推移 (過去最大20回分)</p>
+                    <div id="graph-container">
+                        <!-- 動的SVGグラフがここに挿入されます -->
+                    </div>
+                </div>
+
+                <div class="separator"></div>
+
+                <!-- 履歴テーブル -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="history-table">
+                        <thead>
+                            <tr class="border-b-2 border-gray-400">
+                                <th class="p-2">日時</th>
+                                <th class="p-2">内容</th>
+                                <th class="p-2">解答数</th>
+                                <th class="p-2">正解率</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <!-- 履歴行がここに挿入されます -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- オールリセット -->
+                <div class="mt-6 text-right">
+                    <button onclick="confirmAllReset()" class="px-6 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 border-2 border-red-900">
+                        ⚠️ 履歴と進行状況をすべて初期化する
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- ========================================== -->
+        <!-- 4. 演習中画面（学習画面）                   -->
+        <!-- ========================================== -->
+        <section id="quiz-screen" class="hidden">
+            <!-- 進捗表示と一時停止 -->
+            <div class="flex flex-wrap items-center justify-between gap-4 card mb-4">
+                <div>
+                    <span id="quiz-badge" class="px-3 py-1 rounded bg-blue-700 text-white font-bold mr-2 text-sm">科目別</span>
+                    <span id="quiz-info" class="font-bold">第30回 医療概論</span>
+                </div>
+                <div class="font-bold text-lg">
+                    進行状況: <span id="quiz-progress" class="text-xl">1/50</span> 問目
+                </div>
+                <button onclick="stopAndSaveQuiz()" class="btn-custom py-2 min-h-[3rem] bg-orange-700 text-white hover:bg-orange-800">
+                    ⏸ 途中で修了して保存
+                </button>
+            </div>
+
+            <!-- 問題カード -->
+            <div class="card mb-4">
+                <div class="flex justify-between items-start mb-2">
+                    <span id="quiz-num-display" class="font-bold border-b-2 border-gray-400">問題 番号不明</span>
+                </div>
+                <div id="quiz-question-text" class="text-question mt-2 mb-4">
+                    ここに問題文が表示されます。
+                </div>
+            </div>
+
+            <!-- 選択肢ボタン群 (4つの大きなボタン) -->
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <button id="opt-btn-1" onclick="submitAnswer('1')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">①</span> <span id="opt-text-1">選択肢1</span>
+                </button>
+                <button id="opt-btn-2" onclick="submitAnswer('2')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">②</span> <span id="opt-text-2">選択肢2</span>
+                </button>
+                <button id="opt-btn-3" onclick="submitAnswer('3')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">③</span> <span id="opt-text-3">選択肢3</span>
+                </button>
+                <button id="opt-btn-4" onclick="submitAnswer('4')" class="btn-custom text-left block w-full">
+                    <span class="font-black mr-2">④</span> <span id="opt-text-4">選択肢4</span>
+                </button>
+            </div>
+
+            <!-- 解答判定フィードバックエリア -->
+            <div id="feedback-area" class="hidden card text-center border-4">
+                <div id="feedback-result" class="text-3xl font-black mb-3">判定</div>
+                <div id="feedback-detail" class="text-xl mb-4">正解は2番です。</div>
+                <button id="next-question-btn" onclick="nextQuestion()" class="w-full btn-custom btn-accent text-2xl">
+                    次へ進む ▶️
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 5. 結果発表画面                            -->
+        <!-- ========================================== -->
+        <section id="result-screen" class="hidden card text-center">
+            <h2 class="text-3xl mb-4">🎉 演習が終了しました！</h2>
+            <div class="separator"></div>
+
+            <div class="my-6">
+                <p class="font-bold">結果発表</p>
+                <div class="text-4xl md:text-6xl font-black my-4 text-green-600" id="result-score-display">
+                    45 / 50 問正解
+                </div>
+                <div class="text-2xl font-bold" id="result-percent-display">
+                    正解率: 90%
+                </div>
+            </div>
+
+            <div class="separator"></div>
+            
+            <button onclick="backToMenu()" class="w-full btn-custom btn-accent text-xl">
+                🏠 メインメニューへ戻る
+            </button>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- リセット・警告等のカスタムダイアログ         -->
+        <!-- ========================================== -->
+        <div id="dialog-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+            <div class="bg-white text-black p-6 rounded-2xl max-w-lg w-full border-4 border-gray-600">
+                <h3 id="dialog-title" class="text-2xl font-bold mb-4 text-red-700">警告</h3>
+                <p id="dialog-message" class="text-lg mb-6">メッセージがここに表示されます。</p>
+                <div class="flex gap-4">
+                    <button id="dialog-cancel-btn" class="flex-1 btn-custom bg-gray-200 text-black border-gray-400">キャンセル</button>
+                    <button id="dialog-confirm-btn" class="flex-1 btn-custom bg-red-700 text-white border-red-900">実行する</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript ロジック -->
+    <script>
+        // グローバル変数
+        let rawQuestions = []; // CSVから読み込んだ全問題データ
+        let currentSession = null; // 現在の演習セッション
+
+        // アプリ起動時に実行
+        window.onload = async function() {
+            // ローカルストレージから各種設定を復元
+            initSettings();
+
+            // 成績履歴と中断データがあれば表示
+            renderHistoryAndGraph();
+            checkSavedSession();
+            updateIncorrectCountDisplay();
+
+            // 1. 自動で CSV フェッチを試みる
+            updateStatusMessage("サーバーから問題データを自動読込中...");
+            const success = await tryAutoFetchCSV();
+            if (!success) {
+                // 自動フェッチ失敗。ローカルキャッシュをチェック
+                const cachedData = localStorage.getItem('cached_csv_data');
+                if (cachedData) {
+                    updateStatusMessage("キャッシュから問題データを復元しました。");
+                    processCSVData(cachedData);
+                } else {
+                    updateStatusMessage("問題データが未読込です。手動でロードしてください。");
+                    document.getElementById('manual-load-box').classList.remove('hidden');
+                }
+            }
+        };
+
+        // ==========================================
+        // 設定管理 (アクセシビリティ)
+        // ==========================================
+        function initSettings() {
+            // 配色テーマ復元
+            const savedTheme = localStorage.getItem('user_theme') || 'default';
+            document.getElementById('theme-selector').value = savedTheme;
+            changeTheme(savedTheme);
+
+            // フォントサイズ復元
+            const savedSize = localStorage.getItem('user_font_size') || 'medium';
+            document.getElementById('size-selector').value = savedSize;
+            changeFontSize(savedSize);
+        }
+
+        function changeTheme(theme) {
+            document.body.className = document.body.className.replace(/\btheme-\S+/g, '');
+            if (theme !== 'default') {
+                document.body.classList.add('theme-' + theme);
+            }
+            localStorage.setItem('user_theme', theme);
+        }
+
+        function changeFontSize(size) {
+            document.body.className = document.body.className.replace(/\bsize-\S+/g, '');
+            document.body.classList.add('size-' + size);
+            localStorage.setItem('user_font_size', size);
+        }
+
+        // ==========================================
+        // 文字コードの自動判定デコーダー (UTF-8 / Shift-JIS)
+        // ==========================================
+        function decodeText(arrayBuffer) {
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // 1. UTF-8 BOMのチェック (EF BB BF)
+            if (uint8Array.length >= 3 && uint8Array[0] === 0xEF && uint8Array[1] === 0xBB && uint8Array[2] === 0xBF) {
+                return new TextDecoder('utf-8').decode(uint8Array.subarray(3));
+            }
+
+            // 2. まずはUTF-8で厳密にデコードを試みる
+            try {
+                const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+                return utf8Decoder.decode(uint8Array);
+            } catch (e) {
+                // UTF-8でエラーが発生した（不正なバイトがある）場合、日本語Windows標準のShift-JIS(CP932等)でデコード
+                console.log("UTF-8デコードに失敗しました。Shift-JISとしてデコードを試みます。");
+                const sjisDecoder = new TextDecoder('shift-jis');
+                return sjisDecoder.decode(uint8Array);
+            }
+        }
+
+        // ==========================================
+        // CSVのフェッチとパース
+        // ==========================================
+        async function tryAutoFetchCSV() {
+            try {
+                const response = await fetch('25-34Exam.csv');
+                if (response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    const text = decodeText(arrayBuffer);
+                    const parseSuccess = processCSVData(text);
+                    if (parseSuccess) {
+                        document.getElementById('manual-load-box').classList.add('hidden');
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn("Auto-fetch failed or CORS blocked. Manual upload option available.", e);
+            }
+            return false;
+        }
+
+        function handleManualCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const text = decodeText(arrayBuffer);
+                const success = processCSVData(text);
+                if (success) {
+                    document.getElementById('manual-load-box').classList.add('hidden');
+                } else {
+                    showDialog("エラー", "CSVファイルの解析に失敗しました。正しい「25-34Exam.csv」ファイルを指定してください。", "閉じる", null, true);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // RFC4180簡易CSVパースロジック (ダブルクォーテーションのセル、複数正解に対応)
+        function parseCSV(text) {
+            const lines = [];
+            let row = [""];
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const next = text[i+1];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (next === '"') {
+                            row[row.length - 1] += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        row[row.length - 1] += c;
+                    }
+                } else {
+                    if (c === '"') {
+                        inQuotes = true;
+                    } else if (c === ',') {
+                        row.push("");
+                    } else if (c === '\r' || c === '\n') {
+                        if (c === '\r' && next === '\n') {
+                            i++;
+                        }
+                        lines.push(row);
+                        row = [""];
+                    } else {
+                        row[row.length - 1] += c;
+                    }
+                }
+            }
+            if (row.length > 1 || row[0] !== "") {
+                lines.push(row);
+            }
+            return lines;
+        }
+
+        function processCSVData(csvText) {
+            // BOMの除去
+            if (csvText.startsWith('\uFEFF')) {
+                csvText = csvText.substring(1);
+            }
+
+            const parsed = parseCSV(csvText);
+            if (parsed.length <= 1) return false;
+
+            const headers = parsed[0].map(h => h.trim());
+            
+            // ヘッダーインデックス特定
+            const colIdx = {
+                year: headers.indexOf("回数"),
+                type: headers.indexOf("種別"),
+                subject: headers.indexOf("科目名"),
+                id: headers.indexOf("番号"),
+                question: headers.indexOf("問題文"),
+                opt1: headers.indexOf("選択肢１"),
+                opt2: headers.indexOf("選択肢２"),
+                opt3: headers.indexOf("選択肢３"),
+                opt4: headers.indexOf("選択肢４"),
+                ans: headers.indexOf("答")
+            };
+
+            // 日本語ヘッダーが正常に一致しない場合のフォールバック(列順)
+            if (colIdx.year === -1) {
+                colIdx.year = 0; colIdx.type = 1; colIdx.subject = 2; colIdx.id = 3;
+                colIdx.question = 4; colIdx.opt1 = 5; colIdx.opt2 = 6; colIdx.opt3 = 7;
+                colIdx.opt4 = 8; colIdx.ans = 9;
+            }
+
+            const questions = [];
+            for (let i = 1; i < parsed.length; i++) {
+                const row = parsed[i];
+                // 空白行やヘッダー崩れの行は飛ばす
+                if (row.length < 10) continue;
+
+                const q = {
+                    year: parseInt(row[colIdx.year]) || 0,
+                    type: (row[colIdx.type] || "").trim(),
+                    subject: (row[colIdx.subject] || "").trim(),
+                    id: parseInt(row[colIdx.id]) || 0,
+                    question: (row[colIdx.question] || "").trim(),
+                    options: [
+                        (row[colIdx.opt1] || "").trim(),
+                        (row[colIdx.opt2] || "").trim(),
+                        (row[colIdx.opt3] || "").trim(),
+                        (row[colIdx.opt4] || "").trim()
+                    ],
+                    answer: (row[colIdx.ans] || "").toString().trim()
+                };
+
+                // 最低限「問題文」と「答え」があるものだけ収集
+                if (q.question && q.answer) {
+                    questions.push(q);
+                }
+            }
+
+            if (questions.length > 0) {
+                rawQuestions = questions;
+                // ローカルにキャッシュ
+                localStorage.setItem('cached_csv_data', csvText);
+                updateStatusMessage(`🟢 準備完了: 全 ${questions.length} 問ロード済`);
+                
+                // 画面要素の更新
+                buildSelectors();
+                updateIncorrectCountDisplay();
+                document.getElementById('menu-screen').classList.remove('hidden');
+                return true;
+            }
+            return false;
+        }
+
+        function updateStatusMessage(msg) {
+            const el = document.getElementById('data-status-message');
+            if (el) el.innerHTML = msg;
+        }
+
+        // ==========================================
+        // フィルターセレクター（セレクトボックス）の構築
+        // ==========================================
+        function buildSelectors() {
+            const subjects = new Set();
+            const years = new Set();
+
+            rawQuestions.forEach(q => {
+                if (q.subject) subjects.add(q.subject);
+                if (q.year) years.add(q.year);
+            });
+
+            // ソート
+            const sortedSubjects = Array.from(subjects).sort();
+            const sortedYears = Array.from(years).sort((a, b) => a - b);
+
+            // 1. 科目別演習 - 科目セレクト
+            const subSelect = document.getElementById('subject-select');
+            subSelect.innerHTML = `<option value="">-- 科目を選択してください --</option>`;
+            sortedSubjects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                subSelect.appendChild(opt);
+            });
+
+            // 2. 科目別演習 - 回数セレクト
+            const subYearSelect = document.getElementById('subject-year-select');
+            subYearSelect.innerHTML = `<option value="all">過去10回分すべてを対象（選択なし）</option>`;
+            sortedYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = `第 ${y} 回 国家試験`;
+                subYearSelect.appendChild(opt);
+            });
+
+            // 3. 模擬試験 - 回数セレクト
+            const mockYearSelect = document.getElementById('mock-year-select');
+            mockYearSelect.innerHTML = `<option value="">-- 国家試験回数を選択してください --</option>`;
+            sortedYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = `第 ${y} 回 国家試験 (1〜160番)`;
+                mockYearSelect.appendChild(opt);
+            });
+        }
+
+        // ==========================================
+        // ❌ 弱点問題（間違えた問題）の管理機能
+        // ==========================================
+        function getIncorrectQuestions() {
+            const saved = localStorage.getItem('incorrect_questions_store');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        function saveIncorrectQuestions(questions) {
+            localStorage.setItem('incorrect_questions_store', JSON.stringify(questions));
+            updateIncorrectCountDisplay();
+        }
+
+        // 間違えた問題をリストに保存 (重複防止)
+        function addIncorrectQuestion(q) {
+            const list = getIncorrectQuestions();
+            const exists = list.some(item => item.year === q.year && item.id === q.id);
+            if (!exists) {
+                list.push(q);
+                saveIncorrectQuestions(list);
+            }
+        }
+
+        // 克服（正解）した問題をリストから削除
+        function removeIncorrectQuestion(q) {
+            let list = getIncorrectQuestions();
+            list = list.filter(item => !(item.year === q.year && item.id === q.id));
+            saveIncorrectQuestions(list);
+        }
+
+        // 弱点問題数をUIに反映
+        function updateIncorrectCountDisplay() {
+            const list = getIncorrectQuestions();
+            const count = list.length;
+            const displayEl = document.getElementById('incorrect-count-display');
+            const startBtn = document.getElementById('start-incorrect-btn');
+
+            if (displayEl) {
+                displayEl.textContent = count;
+            }
+
+            if (startBtn) {
+                if (count > 0) {
+                    startBtn.disabled = false;
+                } else {
+                    startBtn.disabled = true;
+                }
+            }
+        }
+
+        // ==========================================
+        // 演習セッション開始ロジック
+        // ==========================================
+
+        // A. 科目別演習開始
+        function startSubjectSession() {
+            const subject = document.getElementById('subject-select').value;
+            const yearStr = document.getElementById('subject-year-select').value;
+
+            if (!subject) {
+                showDialog("確認", "演習する科目を選択してください。", "OK", null, true);
+                return;
+            }
+
+            // フィルタ
+            let filtered = rawQuestions.filter(q => q.subject === subject);
+            if (yearStr !== 'all') {
+                const yearNum = parseInt(yearStr);
+                filtered = filtered.filter(q => q.year === yearNum);
+            }
+
+            if (filtered.length === 0) {
+                showDialog("該当問題なし", "指定された条件に一致する過去問が見つかりませんでした。", "戻る", null, true);
+                return;
+            }
+
+            // 出題順調整: 「総合(基礎)」「総合(専門)」など、科目名に "総合" がつくものは順番通り、それ以外はシャッフル。
+            const isGeneral = subject.includes("総合");
+            if (isGeneral) {
+                // 回数、問題番号の昇順ソート
+                filtered.sort((a, b) => (a.year - b.year) || (a.id - b.id));
+            } else {
+                // シャッフル
+                shuffleArray(filtered);
+            }
+
+            const badgeText = "科目別";
+            const infoText = `${subject} (${yearStr === 'all' ? '過去10回分' : '第'+yearStr+'回'})`;
+
+            setupAndStartQuiz(filtered, 'subject', badgeText, infoText, subject, yearStr);
+        }
+
+        // B. 模擬試験開始
+        function startMockSession() {
+            const yearStr = document.getElementById('mock-year-select').value;
+            if (!yearStr) {
+                showDialog("確認", "試験回数を選択してください。", "OK", null, true);
+                return;
+            }
+
+            const yearNum = parseInt(yearStr);
+            let filtered = rawQuestions.filter(q => q.year === yearNum);
+
+            if (filtered.length === 0) {
+                showDialog("該当問題なし", "指定された回の問題が見つかりません。", "戻る", null, true);
+                return;
+            }
+
+            // 模擬試験は1〜160番まで通してオリジナル（番号順）で練習
+            filtered.sort((a, b) => a.id - b.id);
+
+            const badgeText = "模擬試験";
+            const infoText = `第 ${yearNum} 回 国家試験`;
+
+            setupAndStartQuiz(filtered, 'mock', badgeText, infoText, null, yearStr);
+        }
+
+        // C. 弱点克服演習開始 (新規)
+        function startIncorrectSession() {
+            const incorrectList = getIncorrectQuestions();
+            if (incorrectList.length === 0) {
+                showDialog("案内", "現在、間違えた問題（弱点ストック）はありません。", "閉じる", null, true);
+                return;
+            }
+
+            // 出題順をシャッフル
+            const questions = [...incorrectList];
+            shuffleArray(questions);
+
+            const badgeText = "弱点克服";
+            const infoText = `間違えた問題の再挑戦`;
+
+            setupAndStartQuiz(questions, 'incorrect', badgeText, infoText, null, null);
+        }
+
+        // セッション初期設定とQuiz画面遷移
+        function setupAndStartQuiz(questions, mode, badge, info, selectedSub, selectedYr) {
+            currentSession = {
+                mode: mode,
+                selectedSubject: selectedSub,
+                selectedYear: selectedYr,
+                questions: questions,
+                currentIndex: 0,
+                userAnswers: {}, // key: index, value: { choice, isCorrect }
+                badge: badge,
+                info: info
+            };
+
+            // セーブデータを保存
+            saveProgressToLocalStorage();
+            launchQuizScreen();
+        }
+
+        function launchQuizScreen() {
+            // UI切替
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            // 画面反映
+            renderCurrentQuestion();
+        }
+
+        // ==========================================
+        // 演習画面 描画＆ロジック
+        // ==========================================
+        function renderCurrentQuestion() {
+            if (!currentSession) return;
+
+            const q = currentSession.questions[currentSession.currentIndex];
+            
+            // 各テキスト反映
+            document.getElementById('quiz-badge').textContent = currentSession.badge;
+            document.getElementById('quiz-info').textContent = currentSession.info;
+            document.getElementById('quiz-progress').textContent = `${currentSession.currentIndex + 1} / ${currentSession.questions.length}`;
+            document.getElementById('quiz-num-display').textContent = `第 ${q.year} 回 - 番号 ${q.id} [${q.subject}]`;
+            
+            // 問題文
+            document.getElementById('quiz-question-text').textContent = q.question;
+
+            // 選択肢ボタンの有効化と初期化 (文字サイズがbodyに連動するように調整済み)
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`opt-btn-${i}`);
+                const txt = document.getElementById(`opt-text-${i}`);
+                
+                txt.textContent = q.options[i - 1] || `選択肢 ${i}`;
+                
+                // クラス初期化 (フォントサイズは全体の文字の大きさ設定に連動)
+                btn.className = "btn-custom text-left block w-full";
+                btn.disabled = false;
+            }
+
+            // 判定エリア隠す
+            document.getElementById('feedback-area').classList.add('hidden');
+        }
+
+        // 解答決定
+        function submitAnswer(choice) {
+            if (!currentSession) return;
+            const q = currentSession.questions[currentSession.currentIndex];
+
+            // 複数正解の考慮：カンマ区切り（"1,2,3,4"など）や通常の一致を判定
+            const correctAnswers = q.answer.split(',').map(a => a.trim());
+            const isCorrect = correctAnswers.includes(choice);
+
+            // セッションに記録
+            currentSession.userAnswers[currentSession.currentIndex] = {
+                choice: choice,
+                isCorrect: isCorrect
+            };
+
+            // 間違えたら弱点問題に自動登録
+            if (!isCorrect) {
+                addIncorrectQuestion(q);
+            } else {
+                // 弱点克服モード中に正解した場合は、弱点問題リストから削除
+                if (currentSession.mode === 'incorrect') {
+                    removeIncorrectQuestion(q);
+                }
+            }
+
+            // 進捗をローカル保存 (途中終了用)
+            saveProgressToLocalStorage();
+
+            // 選択肢ボタンを非活性化＆正解不正解を着色
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`opt-btn-${i}`);
+                btn.disabled = true;
+
+                const iStr = i.toString();
+                // ユーザーが選択したものが正解だった
+                if (iStr === choice) {
+                    if (isCorrect) {
+                        btn.classList.add('bg-green-700', 'text-white', 'border-green-900');
+                    } else {
+                        btn.classList.add('bg-red-700', 'text-white', 'border-red-900');
+                    }
+                }
+                // もし正解を明示する場合 (ユーザーが間違えた時に正解のボタンをハイライト)
+                if (correctAnswers.includes(iStr) && !isCorrect) {
+                    btn.classList.add('bg-green-700', 'text-white', 'border-green-900');
+                }
+            }
+
+            // フィードバック表示
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackResult = document.getElementById('feedback-result');
+            const feedbackDetail = document.getElementById('feedback-detail');
+            const nextBtn = document.getElementById('next-question-btn');
+
+            feedbackArea.classList.remove('hidden');
+
+            // フィードバック色変更（視覚障害者用ハレーション防止色）
+            feedbackArea.style.borderColor = isCorrect ? 'var(--correct-color)' : 'var(--incorrect-color)';
+
+            if (isCorrect) {
+                feedbackResult.textContent = "⭕ 正解！";
+                feedbackResult.style.color = 'var(--correct-color)';
+                feedbackDetail.textContent = `正解は ${q.answer} です。よくできました！`;
+            } else {
+                feedbackResult.textContent = "❌ 不正解";
+                feedbackResult.style.color = 'var(--incorrect-color)';
+                feedbackDetail.textContent = `正解は ${q.answer} です。もう一度復習しましょう。`;
+            }
+
+            // 次へボタンの文字切替
+            if (currentSession.currentIndex === currentSession.questions.length - 1) {
+                nextBtn.textContent = "🏆 結果を表示する";
+            } else {
+                nextBtn.textContent = "次へ進む ▶️";
+            }
+
+            // 次へ進むボタンにフォーカスをあてて操作性向上
+            nextBtn.focus();
+        }
+
+        // 次の問題へ
+        function nextQuestion() {
+            if (!currentSession) return;
+
+            if (currentSession.currentIndex < currentSession.questions.length - 1) {
+                currentSession.currentIndex++;
+                renderCurrentQuestion();
+            } else {
+                // 演習終了
+                finishSession();
+            }
+        }
+
+        // 演習終了と成績記録
+        function finishSession() {
+            if (!currentSession) return;
+
+            const total = currentSession.questions.length;
+            let correct = 0;
+            for (let i = 0; i < total; i++) {
+                if (currentSession.userAnswers[i]?.isCorrect) {
+                    correct++;
+                }
+            }
+
+            const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            // 画面反映
+            document.getElementById('result-score-display').textContent = `${correct} / ${total} 問 正解`;
+            document.getElementById('result-percent-display').textContent = `正解率: ${percent}%`;
+
+            // 成績履歴に追加
+            saveScoreHistory({
+                timestamp: Date.now(),
+                modeText: currentSession.info,
+                total: total,
+                answered: total,
+                correct: correct
+            });
+
+            // 進行中データを削除
+            localStorage.removeItem('saved_session');
+            document.getElementById('resume-container').classList.add('hidden');
+
+            // 画面切替
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+
+        // 途中で保存して戻る
+        function stopAndSaveQuiz() {
+            showDialog(
+                "確認", 
+                "現在の学習状況を保存してメニューに戻りますか？続きからいつでも再開できます。", 
+                "保存して戻る", 
+                () => {
+                    saveProgressToLocalStorage();
+                    checkSavedSession();
+                    backToMenu();
+                }
+            );
+        }
+
+        function backToMenu() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+            renderHistoryAndGraph();
+            updateIncorrectCountDisplay();
+        }
+
+        // ==========================================
+        // レジューム（続きから再開）処理
+        // ==========================================
+        function checkSavedSession() {
+            const saved = localStorage.getItem('saved_session');
+            const container = document.getElementById('resume-container');
+            if (saved) {
+                try {
+                    const sessionObj = JSON.parse(saved);
+                    // 以前と問題データ数が一致しているか
+                    if (sessionObj && sessionObj.questions && sessionObj.questions.length > 0) {
+                        container.classList.remove('hidden');
+                        return;
+                    }
+                } catch(e) {}
+            }
+            container.classList.add('hidden');
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem('saved_session');
+            if (!saved) return;
+
+            try {
+                currentSession = JSON.parse(saved);
+                launchQuizScreen();
+                showNotification("前回の途中から再開しました。");
+            } catch(e) {
+                showDialog("エラー", "セッションの復元に失敗しました。", "OK", null, true);
+            }
+        }
+
+        function saveProgressToLocalStorage() {
+            if (currentSession) {
+                localStorage.setItem('saved_session', JSON.stringify(currentSession));
+            }
+        }
+
+        // ==========================================
+        // 履歴・成績データの保存とSVGグラフのレンダリング
+        // ==========================================
+        function saveScoreHistory(record) {
+            let history = [];
+            const saved = localStorage.getItem('score_history');
+            if (saved) {
+                try {
+                    history = JSON.parse(saved);
+                } catch(e) {}
+            }
+            history.push(record);
+            localStorage.setItem('score_history', JSON.stringify(history));
+        }
+
+        function renderHistoryAndGraph() {
+            let history = [];
+            const saved = localStorage.getItem('score_history');
+            if (saved) {
+                try {
+                    history = JSON.parse(saved);
+                } catch(e) {}
+            }
+
+            // 履歴テーブルの更新
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">学習履歴がまだありません。</td></tr>`;
+            } else {
+                // 新しい順に最大10件表示
+                const displayHistory = [...history].reverse().slice(0, 10);
+                displayHistory.forEach(item => {
+                    const dateStr = new Date(item.timestamp).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                    const percent = item.answered > 0 ? Math.round((item.correct / item.answered) * 100) : 0;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-300";
+                    tr.innerHTML = `
+                        <td class="p-2 text-sm">${dateStr}</td>
+                        <td class="p-2 font-bold">${item.modeText}</td>
+                        <td class="p-2">${item.correct}/${item.total}</td>
+                        <td class="p-2 font-bold ${percent >= 60 ? 'text-green-600' : 'text-red-500'}">${percent}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // SVGグラフ生成
+            const graphContainer = document.getElementById('graph-container');
+            graphContainer.innerHTML = generateTrendGraph(history);
+        }
+
+        // ロービジョンの方にも見やすい超太線SVGグラフ生成
+        function generateTrendGraph(history) {
+            if (!history || history.length === 0) {
+                return `<div class="p-6 text-center text-gray-500 font-bold border-2 border-dashed border-gray-400 rounded-lg">履歴がたまると、ここに折れ線グラフが表示されます。</div>`;
+            }
+
+            // 直近20回分を抽出
+            const data = history.slice(-20);
+            const width = 800;
+            const height = 300;
+            const paddingLeft = 70;
+            const paddingRight = 40;
+            const paddingTop = 40;
+            const paddingBottom = 50;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            let points = [];
+            let gridLines = '';
+            let yLabels = '';
+            let xLabels = '';
+
+            // Y軸補助線 (0%, 25%, 50%, 75%, 100%)
+            for (let i = 0; i <= 4; i++) {
+                const pct = i * 25;
+                const y = paddingTop + chartHeight - (pct / 100) * chartHeight;
+                // 太めの破線
+                gridLines += `<line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="var(--button-border)" stroke-dasharray="6,6" stroke-width="2" />`;
+                yLabels += `<text x="${paddingLeft - 15}" y="${y + 8}" font-size="18" font-weight="bold" fill="var(--text-color)" text-anchor="end">${pct}%</text>`;
+            }
+
+            // X軸プロット計算
+            const stepX = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth;
+
+            data.forEach((item, index) => {
+                const pct = item.answered > 0 ? (item.correct / item.answered) * 100 : 0;
+                const x = paddingLeft + index * stepX;
+                const y = paddingTop + chartHeight - (pct / 100) * chartHeight;
+                points.push({ x, y, pct, item });
+            });
+
+            let pathD = '';
+            let circles = '';
+
+            if (points.length > 0) {
+                pathD = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                    pathD += ` L ${points[i].x} ${points[i].y}`;
+                }
+
+                points.forEach((p, idx) => {
+                    // 太いドット
+                    circles += `
+                        <circle cx="${p.x}" cy="${p.y}" r="12" fill="var(--accent-color)" stroke="var(--bg-color)" stroke-width="4" />
+                        <text x="${p.x}" y="${p.y - 18}" font-size="16" font-weight="black" fill="var(--text-color)" text-anchor="middle">${Math.round(p.pct)}%</text>
+                    `;
+
+                    // X軸ラベル (最初、中間、最後などポイントを絞る)
+                    if (idx === 0 || idx === points.length - 1 || (points.length > 2 && idx === Math.floor(points.length / 2))) {
+                        const date = new Date(p.item.timestamp);
+                        const labelText = `${date.getMonth() + 1}/${date.getDate()}`;
+                        xLabels += `<text x="${p.x}" y="${height - 15}" font-size="16" font-weight="bold" fill="var(--text-color)" text-anchor="middle">${labelText}</text>`;
+                    }
+                });
+            }
+
+            // 非常に太い線 (stroke-width="6") で視認性を確保
+            return `
+                <svg viewBox="0 0 ${width} ${height}" class="w-full max-w-full h-auto" style="background: var(--card-bg); border-radius: 12px; border: 3px solid var(--button-border); box-shadow: inset 0 0 10px rgba(0,0,0,0.05);" role="img" aria-label="成績推移グラフ">
+                    ${gridLines}
+                    ${yLabels}
+                    ${xLabels}
+                    ${points.length > 1 ? `<path d="${pathD}" fill="none" stroke="var(--accent-color)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />` : ''}
+                    ${circles}
+                </svg>
+            `;
+        }
+
+        // 全リセット確認
+        function confirmAllReset() {
+            showDialog(
+                "⚠️ 完全初期化の警告", 
+                "これまでの成績履歴、間違えた問題（弱点ストック）、現在保存されている演習進行データが完全に削除されます。よろしいですか？", 
+                "すべてリセットする", 
+                () => {
+                    localStorage.removeItem('score_history');
+                    localStorage.removeItem('saved_session');
+                    localStorage.removeItem('incorrect_questions_store');
+                    currentSession = null;
+                    checkSavedSession();
+                    renderHistoryAndGraph();
+                    updateIncorrectCountDisplay();
+                    showNotification("学習データを完全に初期化しました。");
+                }
+            );
+        }
+
+        // ==========================================
+        // ヘルパー・便利ユーティリティ
+        // ==========================================
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showNotification(msg) {
+            const bar = document.getElementById('notification-bar');
+            bar.textContent = msg;
+            bar.classList.remove('hidden');
+            setTimeout(() => {
+                bar.classList.add('hidden');
+            }, 4000);
+        }
+
+        // アクセシブルなカスタムダイアログ（alert/confirm的動作の代替）
+        function showDialog(title, message, confirmText, onConfirm, isAlertOnly = false) {
+            const overlay = document.getElementById('dialog-overlay');
+            const titleEl = document.getElementById('dialog-title');
+            const msgEl = document.getElementById('dialog-message');
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            confirmBtn.textContent = confirmText;
+
+            overlay.classList.remove('hidden');
+
+            if (isAlertOnly) {
+                cancelBtn.classList.add('hidden');
+            } else {
+                cancelBtn.classList.remove('hidden');
+            }
+
+            // ハンドラ登録
+            confirmBtn.onclick = function() {
+                overlay.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+
+            cancelBtn.onclick = function() {
+                overlay.classList.add('hidden');
+            };
+            
+            // フォーカスをあてる
+            confirmBtn.focus();
+        }
+    </script>
+</body>
+</html>
